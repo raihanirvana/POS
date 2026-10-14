@@ -1,0 +1,14 @@
+node_modules/
+client/dist/
+data/
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db
+*.db-wal
+*.db-shm
+*.log
+.DS_Store

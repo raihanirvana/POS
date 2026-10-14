@@ -1,0 +1,199 @@
+:root {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  color: #24362d;
+  background: #f3f6f4;
+  font-synthesis: none;
+  line-height: 1.6;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+a {
+  color: #285a46;
+  text-decoration: none;
+}
+a:focus-visible {
+  outline: 3px solid #d7a63d;
+  outline-offset: 5px;
+}
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+.foundation-page {
+  max-width: 1060px;
+  margin: auto;
+  padding: 30px 36px;
+}
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 30px;
+  font-weight: 800;
+}
+.brand-mark {
+  position: relative;
+  background: #285a46;
+  color: white;
+  border-radius: 13px;
+  width: 42px;
+  height: 45px;
+  display: grid;
+  place-items: center;
+  font-size: 36px;
+  line-height: 1;
+}
+.brand-mark span {
+  position: absolute;
+  right: 6px;
+  top: 2px;
+  color: #f5cc70;
+  font-size: 20px;
+}
+.brand small {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+.demo-badge {
+  padding: 6px 11px;
+  border-radius: 7px;
+  background: #fff3d7;
+  color: #735727;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.project-intro {
+  padding: 80px 0 44px;
+  max-width: 700px;
+}
+.stage-label {
+  color: #66756c;
+  font-size: 12px;
+}
+h1 {
+  font-size: clamp(30px, 4.5vw, 46px);
+  line-height: 1.25;
+  letter-spacing: -1.7px;
+  margin: 17px 0 23px;
+}
+.project-intro p {
+  color: #66756c;
+  max-width: 60ch;
+  font-size: 14px;
+}
+.primary-link {
+  display: inline-flex;
+  padding: 12px 18px;
+  border-radius: 9px;
+  background: #285a46;
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+  margin-top: 10px;
+}
+.primary-link:hover {
+  background: #1f4637;
+}
+.health-status {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: white;
+  padding: 22px;
+  border: 1px solid #e4eae5;
+  border-radius: 12px;
+}
+.health-status strong {
+  font-size: 13px;
+}
+.health-status p {
+  margin: 4px 0 0;
+  color: #66756c;
+  font-size: 12px;
+}
+.status-dot {
+  width: 11px;
+  height: 11px;
+  background: #d6ac43;
+  border-radius: 50%;
+  flex: none;
+}
+.health-status--ready .status-dot {
+  background: #285a46;
+}
+.health-status--error .status-dot {
+  background: #b23b3b;
+}
+.stack-overview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 38px 0;
+  border-top: 1px solid #dce5de;
+  border-bottom: 1px solid #dce5de;
+}
+.stack-item {
+  padding: 24px 15px 24px 0;
+}
+.stack-item h2 {
+  font-size: 16px;
+  margin-bottom: 7px;
+}
+.stack-item p {
+  color: #66756c;
+  font-size: 12px;
+  margin: 0;
+}
+footer {
+  color: #66756c;
+  font-size: 11px;
+  padding: 10px 0 24px;
+}
+
+@media (max-width: 600px) {
+  .foundation-page {
+    padding: 22px;
+  }
+  .project-intro {
+    padding-top: 55px;
+  }
+  .stack-overview {
+    grid-template-columns: 1fr;
+  }
+  .stack-item + .stack-item {
+    border-top: 1px solid #e4eae5;
+  }
+  .brand {
+    font-size: 24px;
+  }
+  .brand-mark {
+    width: 34px;
+    height: 37px;
+    font-size: 30px;
+  }
+  .demo-badge {
+    font-size: 9px;
+    padding: 6px 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

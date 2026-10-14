@@ -1,0 +1,40 @@
+{
+  "name": "seduh-pos",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "concurrently --kill-others --names web,api \"npm:dev:web\" \"npm:dev:api\"",
+    "dev:web": "vite --config client/vite.config.js",
+    "dev:api": "node --watch server/index.js",
+    "build": "vite build --config client/vite.config.js",
+    "start": "node server/index.js",
+    "db:migrate": "node scripts/migrate.js",
+    "db:seed": "node scripts/seed.js",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix --max-warnings 0",
+    "format": "prettier --write client/src server scripts client/vite.config.js *.js package.json",
+    "format:check": "prettier --check client/src server scripts client/vite.config.js *.js package.json",
+    "check": "npm run lint && npm run format:check && npm run build"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.0",
+    "@vitejs/plugin-react": "^5.1.0",
+    "concurrently": "^9.2.1",
+    "eslint": "^10.0.0",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "prettier": "^3.6.2",
+    "vite": "^7.2.0"
+  }
+}
