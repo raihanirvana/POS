@@ -2,7 +2,7 @@
 
 Versi 1.0 · 14 Oktober 2026 · Status: rancangan demo portfolio
 
-> Pengembangan berikutnya: versi fullstack React + Vite, Express, dan SQLite dikerjakan per tiket dalam [docs/tickets/README.md](docs/tickets/README.md). Versi HTML di bawah menjadi acuan desain/perilaku. POS-001 menyiapkan fondasi dan POS-002 menyiapkan skema database, migrasi, dan seed; sesi demo, API, dan UI fullstack belum selesai sampai tiket masing-masing ditutup. Aturan baru: fungsi maksimal 25 baris dan verifikasi tanpa unit test.
+> Pengembangan berikutnya: versi fullstack React + Vite, Express, dan SQLite dikerjakan per tiket dalam [docs/tickets/README.md](docs/tickets/README.md). Versi HTML di bawah menjadi acuan desain/perilaku. POS-001 menyiapkan fondasi, POS-002 menyiapkan skema database, migrasi, dan seed, dan POS-003 menyiapkan sesi demo pemilik/kasir di server; API fitur dan UI fullstack belum selesai sampai tiket masing-masing ditutup. Aturan baru: fungsi maksimal 25 baris dan verifikasi tanpa unit test.
 
 ## 1. Gambaran produk
 

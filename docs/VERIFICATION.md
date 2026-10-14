@@ -43,6 +43,23 @@ npm run db:seed      # "... seed dilewati."
 
 Bandingkan hash `sqlite_master` sebelum dan sesudah migrasi kedua. Coba UPDATE/INSERT invalid lewat `node:sqlite` (harga < 1.000, stok negatif, diskon > 100, total/kembalian salah, tanggal bukan ISO, idempotency key ganda, produk workspace lain); semuanya harus ditolak. Jalankan API dengan `DATABASE_PATH` yang sama, hentikan, jalankan lagi, lalu pastikan jumlah data tidak berubah.
 
+## Sesi demo — POS-003
+
+Jalankan API pada database sementara, lalu gunakan dua cookie jar:
+
+```sh
+curl -i http://127.0.0.1:3001/api/session                       # 401 UNAUTHENTICATED
+curl -c a.txt -X POST -H 'content-type: application/json' \
+  -d '{"role":"owner"}' http://127.0.0.1:3001/api/demo/sessions  # 201, Set-Cookie HttpOnly
+curl -c b.txt -X POST -H 'content-type: application/json' \
+  -d '{"role":"cashier"}' http://127.0.0.1:3001/api/demo/sessions
+curl -b a.txt http://127.0.0.1:3001/api/session                  # owner
+curl -b b.txt http://127.0.0.1:3001/api/session                  # cashier
+curl -b a.txt -c a.txt -X DELETE http://127.0.0.1:3001/api/session  # 204
+```
+
+Periksa di SQLite bahwa kedua jar memakai workspace berbeda dan `token_hash` tidak sama dengan isi cookie. Coba body dengan `workspaceId`, peran asing, cookie lama setelah logout/ganti peran, dan sesi kedaluwarsa (`DEMO_TTL_MINUTES=1`). Sebelum POS-004 belum ada endpoint pemilik, jadi uji 403 memakai harness sementara di luar repo yang memasang `requireSession` + `requireRole('owner')` asli. Setelah POS-004, ulangi dengan `POST /api/products` memakai sesi kasir.
+
 ## Checklist fitur untuk POS-012
 
 Belum dijalankan untuk fullstack; isi setelah tiket terkait selesai.

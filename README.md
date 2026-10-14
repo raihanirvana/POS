@@ -1,6 +1,6 @@
 # Seduh POS — portfolio fullstack
 
-Pengembangan React + Vite, Express, dan SQLite dilakukan per tiket. **POS-001 dan POS-002 sudah selesai**: fondasi proyek serta skema database, migrasi, dan seed; fitur POS fullstack dihubungkan pada tiket berikutnya. Lihat [daftar tiket](docs/tickets/README.md) dan [aturan proyek](AGENTS.md).
+Pengembangan React + Vite, Express, dan SQLite dilakukan per tiket. **POS-001 sampai POS-003 sudah selesai**: fondasi proyek; skema database, migrasi, dan seed; serta sesi demo pemilik/kasir dengan ruang data per pengunjung; fitur POS fullstack dihubungkan pada tiket berikutnya. Lihat [daftar tiket](docs/tickets/README.md) dan [aturan proyek](AGENTS.md).
 
 ## Menjalankan fullstack
 
@@ -18,6 +18,8 @@ Buka http://localhost:5173. API berjalan di http://127.0.0.1:3001; frontend mene
 Jika port frontend 5173 sudah digunakan proyek lain, atur `WEB_PORT=5174` pada `.env` atau jalankan `WEB_PORT=5174 npm run dev`. Port API dapat diubah lewat `PORT`. Server tidak mengambil alih proses lain.
 
 Konfigurasi opsional: salin `.env.example` menjadi `.env`. Default tetap dapat berjalan tanpa `.env`. Untuk hosting, gunakan `HOST=0.0.0.0` dan `PORT` yang ditentukan penyedia. Jika HOST adalah `0.0.0.0` atau `::`, target proxy pengembangan tetap memakai loopback.
+
+`DEMO_TTL_MINUTES` mengatur umur ruang demo dan sesinya (default 720 menit). `TRUST_PROXY` dibiarkan `false` saat lokal; isi jumlah hop atau alamat reverse proxy HTTPS saat hosting agar cookie sesi mendapat atribut `Secure`. Nilai `true` ditolak karena memercayai semua proxy.
 
 ## Kualitas dan build
 
@@ -45,9 +47,12 @@ client/
   src/lib/           API client
   dist/              hasil build (diabaikan Git)
 server/
-  database/          koneksi, migrasi SQL, transaksi, dan seed; repository menyusul
-  lib/               waktu Asia/Jakarta dan perhitungan rupiah
-  middleware/        konteks request dan error
+  database/          koneksi, migrasi SQL, transaksi, dan seed
+  lib/               waktu Asia/Jakarta, rupiah, cookie sesi, HttpError
+  middleware/        konteks request, sesi/peran, dan error
+  repositories/      query SQLite per tabel
+  services/          aturan bisnis (sesi demo)
+  validation/        validasi body request
   routes/            endpoint API
 scripts/             perintah db:migrate dan db:seed
 docs/

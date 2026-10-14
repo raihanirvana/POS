@@ -43,6 +43,13 @@ Semua tabel domain memiliki `workspace_id` dengan `ON DELETE CASCADE` ke `demo_w
 
 Jika database lama sudah berisi item yang merujuk produk workspace lain, migrasi 002 berhenti dan rollback. Data tersebut harus dikoreksi secara eksplisit; migrasi tidak menebak pemilik yang benar atau memindahkan data pengunjung.
 
+## Sesi demo
+
+- Setiap login tanpa sesi aktif membuat satu `demo_workspaces` baru beserta seed dan sesi dalam satu transaksi. Ruang demo kedaluwarsa dihapus pada saat yang sama.
+- Ganti peran mencabut sesi lama (`revoked_at`) lalu menerbitkan sesi baru di workspace yang sama. Hanya ada satu sesi aktif per workspace.
+- `sessions.expires_at` sama dengan `demo_workspaces.expires_at`; ganti peran tidak memperpanjang ruang demo. `last_active_at` diperbarui saat ganti peran.
+- Logout mencabut sesi dengan update bersyarat dalam transaksi sebelum menghapus workspace (CASCADE ke sesi, produk, transaksi, pengaturan). Jika sesi sudah dicabut saat pergantian peran, logout tertunda tidak menghapus workspace/sesi yang baru.
+
 ## Seed
 
 `seedWorkspaceData(database, workspaceId, now)` tidak membuka transaksi sendiri sehingga bisa digabung dengan pembuatan sesi (POS-003) atau reset (POS-011). `seedWorkspace()` membungkusnya dalam satu transaksi. Seed dilewati jika `seeded_at` sudah terisi; reset harus menghapus data dan mengosongkan `seeded_at` dalam transaksi yang sama.
