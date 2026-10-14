@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { addToCart, reconcileCart, setCartQuantity } from '../lib/cart.js';
+import { useCartReset } from './useCartReset.js';
 import { useCheckout } from './useCheckout.js';
 
 const emptyOrder = {
@@ -37,8 +38,12 @@ export function useCartState() {
   const orderRef = useRef(order);
   orderRef.current = order;
   const checkout = useCheckout();
-  const locked = checkout.status === 'submitting' || checkout.status === 'uncertain';
   // setOrder dan orderRef stabil, jadi aksi cukup dibuat sekali.
   const actions = useMemo(() => orderActions(setOrder, orderRef), []);
-  return { order, receipt, setReceipt, checkout, locked, ...actions };
+  const reset = useCartReset(actions, checkout, setReceipt);
+  const locked =
+    reset.resetting ||
+    checkout.status === 'submitting' ||
+    checkout.status === 'uncertain';
+  return { order, receipt, setReceipt, checkout, locked, ...reset, ...actions };
 }

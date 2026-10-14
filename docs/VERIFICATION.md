@@ -172,6 +172,19 @@ Masuk sebagai Pemilik dan buat satu penjualan (contoh PRD Rp72.000):
 
 Review POS-010 juga menguji ganti periode saat request tertunda/gagal (ekspor tetap nonaktif), respons JSON/CSV rusak, periode tahun 0000/9999, dua API checkout bersamaan dengan laporan, menu bernama sama, pelanggan 60 karakter di dashboard, dan 30 tooltip keyboard pada layar 360px. Detail bukti ada di [POS-010](tickets/POS-010.md). Regresi POS-005, POS-006, POS-008, dan POS-009 dijalankan ulang tanpa unit test.
 
+## Pengaturan dan reset — POS-011
+
+1. `/pengaturan` sebagai Pemilik: kosongkan Nama toko lalu simpan → pesan error dan fokus, tanpa request. Ubah nama dan pesan struk → "Pengaturan disimpan.", dan PATCH hanya berisi field yang berubah. Refresh → nilai tetap.
+2. Buat transaksi, ubah nama toko lagi, lalu buka struk transaksi itu di `/transaksi`: nama dan pesan toko lama tetap.
+3. Browser A: isi pesanan di Kasir (atau buat pembayaran yang belum pasti), lalu **Reset data contoh** → dialog (Escape membatalkan) → konfirmasi. Pengaturan kembali "Seduh Coffee", menu dan transaksi contoh kembali, dan pesanan di Kasir kosong dan tidak terkunci.
+4. Browser B (workspace lain yang sudah diubah): pengaturan, produk, transaksi, dan stoknya tidak berubah.
+5. Kasir: `/pengaturan` → halaman 403. `PATCH /api/settings` dan `POST /api/demo/reset` → 403, sedangkan `GET /api/settings` → 200.
+6. API: reset tanpa `{"confirmation":"reset"}` → 400; field asing/kosong/terlalu panjang pada PATCH → 400 dengan `fields`.
+7. Tunda respons pembayaran yang sudah di-commit, browser Back ke Pengaturan, reset, lalu buat pesanan baru: respons lama tidak menghapus pesanan atau membuka struk lama. Ulangi dengan respons gagal lama sesudah pembayaran baru berhasil.
+8. Tunda reset lalu browser Back ke Kasir: menu/checkout tetap terkunci sampai selesai. Klik konfirmasi dua kali → satu POST; Escape tidak menutup saat sibuk.
+9. PATCH tertunda menonaktifkan reset; GET setelah simpan menonaktifkan editor sampai data terbaru tiba. Respons pengaturan/reset invalid menampilkan error, tanpa klaim sukses.
+10. Trigger seed gagal → rollback persis; sesi yang dicabut/berakhir atau berganti peran saat request menunggu kunci ditolak tanpa perubahan. Bukti review dan regresi POS-007/008/010 ada di [POS-011](tickets/POS-011.md).
+
 ## Checklist fitur untuk POS-012
 
 Belum dijalankan untuk fullstack; isi setelah tiket terkait selesai.

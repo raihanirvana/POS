@@ -53,6 +53,6 @@ Jika database lama sudah berisi item yang merujuk produk workspace lain, migrasi
 
 ## Seed
 
-`seedWorkspaceData(database, workspaceId, now)` tidak membuka transaksi sendiri sehingga bisa digabung dengan pembuatan sesi (POS-003) atau reset (POS-011). `seedWorkspace()` membungkusnya dalam satu transaksi. Seed dilewati jika `seeded_at` sudah terisi; reset harus menghapus data dan mengosongkan `seeded_at` dalam transaksi yang sama.
+`seedWorkspaceData(database, workspaceId, now)` tidak membuka transaksi sendiri sehingga bisa digabung dengan pembuatan sesi (POS-003) atau reset (POS-011). `seedWorkspace()` membungkusnya dalam satu transaksi. Seed dilewati jika `seeded_at` sudah terisi. Reset demo (`POST /api/demo/reset`, `services/settings-service.js`) menghapus transaksi, produk, dan pengaturan workspace sesi lewat `clearWorkspaceData`, mengosongkan `seeded_at`, lalu memanggil `seedWorkspaceData`, semuanya dalam satu `BEGIN IMMEDIATE`.
 
 Isi seed: pengaturan Seduh Coffee, 9 menu dari prototype, dan transaksi 7 hari terakhir menurut Asia/Jakarta (4–6 per hari mulai 10.00 WIB, sebagian diskon 10%, tunai/QRIS). Jadwal yang masih di masa depan dilewati, jadi seed sebelum 10.00 WIB belum punya transaksi hari ini. Stok menu adalah stok saat ini; transaksi contoh tidak mengurangi stok lagi.

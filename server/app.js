@@ -4,6 +4,7 @@ import { config } from './config.js';
 import { createHealthRouter } from './routes/health.js';
 import { createProductRouter } from './routes/products.js';
 import { createReportRouter } from './routes/reports.js';
+import { createSettingsRouter } from './routes/settings.js';
 import { createSessionRouter } from './routes/session.js';
 import { createTransactionRouter } from './routes/transactions.js';
 import { loadSession } from './middleware/auth.js';
@@ -29,6 +30,7 @@ export function createApp(database) {
   app.use('/api', createProductRouter(database));
   app.use('/api', createTransactionRouter(database));
   app.use('/api', createReportRouter(database));
+  app.use('/api', createSettingsRouter(database));
   app.use('/api', apiNotFound);
   app.use('/prototype', express.static(config.prototypeDirectory, { dotfiles: 'deny' }));
   app.use(express.static(config.webDirectory));

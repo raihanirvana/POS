@@ -1,6 +1,6 @@
 # API Seduh POS
 
-API JSON satu origin dengan React. Prefix `/api`. Saat ini **healthcheck, sesi demo, produk, transaksi, dashboard, dan laporan** sudah diimplementasikan; endpoint lain di tabel rencana merupakan kontrak untuk tiket berikutnya. Semua respons `/api` memakai `Cache-Control: no-store`.
+API JSON satu origin dengan React. Prefix `/api`. Seluruh endpoint di tabel kontrak sudah diimplementasikan: healthcheck, sesi demo, produk, transaksi, dashboard, laporan, pengaturan, dan reset demo. Semua respons `/api` memakai `Cache-Control: no-store`.
 
 ## Endpoint aktif — POS-001
 
@@ -326,7 +326,31 @@ Validasi sama dengan `/api/reports`. HTTP 200 `text/csv; charset=utf-8`, `Conten
 
 Urutan baris dari yang terlama. Semua sel dikutip dan tanda kutip digandakan. Sel yang diawali `=`, `+`, `-`, `@`, tab, atau CR diberi awalan `'` agar tidak dieksekusi sebagai formula spreadsheet. Periode kosong menghasilkan header saja.
 
-## Kontrak yang direncanakan
+## Pengaturan dan reset demo — POS-011
+
+### GET /api/settings
+
+Kasir dan pemilik. Hasil `{ "settings": { "storeName", "storeAddress", "receiptMessage", "updatedAt" } }` untuk workspace sesi.
+
+### PATCH /api/settings
+
+Pemilik. Field opsional, minimal satu: `storeName` (1–60 karakter setelah trim), `storeAddress` (1–150), dan `receiptMessage` (1–200). Karakter kontrol ditolak; field lain atau body kosong mendapat 400. Sesi diperiksa ulang di dalam transaksi tulis.
+
+Identitas baru hanya dipakai transaksi berikutnya. Struk lama tetap memakai snapshot `store` saat penjualan.
+
+### POST /api/demo/reset
+
+Pemilik. Body wajib `{ "confirmation": "reset" }`; tanpa konfirmasi itu mendapat 400. Langkahnya berjalan dalam satu transaksi SQLite `BEGIN IMMEDIATE`:
+
+1. Sesi diperiksa ulang.
+2. Transaksi, item, produk, dan pengaturan **workspace sesi saja** dihapus.
+3. `seeded_at` dikosongkan, lalu seed contoh dijalankan ulang dengan tanggal relatif terbaru.
+
+Bila ada langkah yang gagal, seluruh perubahan di-rollback. Sesi tetap berlaku dan workspace lain tidak tersentuh. Hasil 200 `{ "reset": true, "products": 9, "transactions": 30 }`; jumlah transaksi bergantung jam saat reset.
+
+ID produk berganti setelah reset, sehingga replay idempotency key lama dengan produk lama mendapat 409 `PRODUCT_UNAVAILABLE`, bukan transaksi ganda. Reset tidak memperpanjang masa berlaku workspace/sesi. Frontend mengunci keranjang selama request dan mengabaikan respons pembayaran yang dibatalkan oleh reset. Endpoint reset belum memiliki idempotency key: retry sesudah respons hilang menjalankan reset baru.
+
+## Ringkasan endpoint
 
 | Metode | Path | Akses | Tiket |
 | --- | --- | --- | --- |
@@ -343,9 +367,9 @@ Urutan baris dari yang terlama. Semua sel dikutip dan tanda kutip digandakan. Se
 | GET | /api/dashboard | Pemilik — aktif | POS-010 |
 | GET | /api/reports | Pemilik — aktif | POS-010 |
 | GET | /api/reports/export | Pemilik — aktif | POS-010 |
-| GET | /api/settings | Kasir/pemilik | POS-011 |
-| PATCH | /api/settings | Pemilik | POS-011 |
-| POST | /api/demo/reset | Pemilik | POS-011 |
+| GET | /api/settings | Kasir/pemilik — aktif | POS-011 |
+| PATCH | /api/settings | Pemilik — aktif | POS-011 |
+| POST | /api/demo/reset | Pemilik — aktif | POS-011 |
 
 Workspace dan peran berasal dari sesi server. Pengunjung tidak bisa memilih workspace orang lain melalui query/payload. Semua uang berupa integer rupiah. Pembayaran tetap simulasi. Backend menghitung harga/diskon/total/kembalian dan mengubah stok atomik.
 

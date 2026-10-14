@@ -25,7 +25,7 @@ export function withWorkspaceAccess(database, auth, access, work) {
 
 const ownerAccess = {
   roles: ['owner'],
-  forbiddenMessage: 'Hanya pemilik dapat mengelola produk.',
+  forbiddenMessage: 'Hanya pemilik dapat melakukan perubahan ini.',
 };
 
 export function withOwnerWorkspace(database, auth, work) {

@@ -57,10 +57,11 @@ function CheckoutButton({ page }) {
   const { cart, preview, products, payment } = page;
   const pending = cart.checkout.status === 'uncertain';
   const disabled =
-    !pending &&
-    (preview.lines.length === 0 ||
-      preview.discountPercent === null ||
-      products.status !== 'ready');
+    cart.resetting ||
+    (!pending &&
+      (preview.lines.length === 0 ||
+        preview.discountPercent === null ||
+        products.status !== 'ready'));
   return (
     <button
       type="button"

@@ -25,21 +25,27 @@ function useCheckoutState() {
 
 // Satu percobaan bayar = satu idempotency key. Hasil tidak pasti mempertahankan key dan
 // body yang sama agar kirim ulang tidak membuat transaksi ganda.
+async function sendAttempt(current, state, inFlight) {
+  if (inFlight.current) {
+    return { ignored: true };
+  }
+  const request = Symbol('checkout');
+  inFlight.current = request;
+  state.setStatus('submitting');
+  state.setError(null);
+  const outcome = await postAttempt(current);
+  if (inFlight.current !== request) {
+    return { ignored: true };
+  }
+  inFlight.current = null;
+  state.apply(current, outcome);
+  return outcome;
+}
+
 export function useCheckout() {
   const state = useCheckoutState();
-  const inFlight = useRef(false);
-  async function send(current) {
-    if (inFlight.current) {
-      return { ignored: true };
-    }
-    inFlight.current = true;
-    state.setStatus('submitting');
-    state.setError(null);
-    const outcome = await postAttempt(current);
-    inFlight.current = false;
-    state.apply(current, outcome);
-    return outcome;
-  }
+  const inFlight = useRef(null);
+  const send = (current) => sendAttempt(current, state, inFlight);
   return {
     attempt: state.attempt,
     status: state.status,
@@ -47,6 +53,9 @@ export function useCheckout() {
     submit: (body, previewTotal) =>
       send(state.attempt ?? { key: newIdempotencyKey(), body, previewTotal }),
     retry: () => send(state.attempt),
-    abandon: () => state.apply(null, {}),
+    abandon: () => {
+      inFlight.current = null;
+      state.apply(null, {});
+    },
   };
 }

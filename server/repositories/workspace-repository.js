@@ -22,3 +22,14 @@ export function deleteExpiredWorkspaces(database, nowIso) {
   return database.prepare('DELETE FROM demo_workspaces WHERE expires_at <= ?').run(nowIso)
     .changes;
 }
+
+// Menghapus data domain satu workspace (item ikut terhapus lewat CASCADE) dan menandai
+// workspace belum di-seed. Sesi tidak disentuh agar pengguna tetap masuk.
+export function clearWorkspaceData(database, workspaceId) {
+  database.prepare('DELETE FROM transactions WHERE workspace_id = ?').run(workspaceId);
+  database.prepare('DELETE FROM products WHERE workspace_id = ?').run(workspaceId);
+  database.prepare('DELETE FROM settings WHERE workspace_id = ?').run(workspaceId);
+  database
+    .prepare('UPDATE demo_workspaces SET seeded_at = NULL WHERE id = ?')
+    .run(workspaceId);
+}

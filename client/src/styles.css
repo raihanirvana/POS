@@ -1994,6 +1994,34 @@ th.numeric {
   color: var(--stone);
 }
 
+/* Pengaturan */
+.settings-form {
+  display: grid;
+  gap: 4px;
+  max-width: 640px;
+}
+
+.settings-form fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.settings-form textarea.input {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.settings-form .primary-button {
+  justify-self: start;
+  margin-top: 6px;
+}
+
+.danger-zone {
+  border-color: #efc9c9;
+}
+
 /* Tablet besar */
 @media (max-width: 1190px) {
   .sidebar {
