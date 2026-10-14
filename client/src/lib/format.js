@@ -23,3 +23,13 @@ export function formatTime(value) {
 }
 
 export const roleLabels = { owner: 'Pemilik', cashier: 'Kasir' };
+
+const rupiahFormat = new Intl.NumberFormat('id-ID', {
+  style: 'currency',
+  currency: 'IDR',
+  maximumFractionDigits: 0,
+});
+
+export function formatRupiah(value) {
+  return rupiahFormat.format(value);
+}

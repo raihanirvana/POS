@@ -1,17 +1,5 @@
-import { useEffect, useRef } from 'react';
-
-function useModal(open) {
-  const dialogRef = useRef(null);
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (open && !dialog.open) {
-      dialog.showModal();
-    } else if (!open && dialog.open) {
-      dialog.close();
-    }
-  }, [open]);
-  return dialogRef;
-}
+import { useId } from 'react';
+import { useModalDialog } from '../hooks/useModalDialog.js';
 
 function DialogActions({ confirmLabel, busy, onConfirm, onCancel }) {
   return (
@@ -33,7 +21,8 @@ function DialogActions({ confirmLabel, busy, onConfirm, onCancel }) {
 
 // <dialog> modal: fokus terkunci di dalam dialog; Escape menutup kecuali saat memproses.
 export function ConfirmDialog({ open, title, children, busy, onCancel, ...actions }) {
-  const dialogRef = useModal(open);
+  const dialogRef = useModalDialog(open);
+  const titleId = useId();
   function handleCancel(event) {
     event.preventDefault();
     if (!busy) {
@@ -45,9 +34,9 @@ export function ConfirmDialog({ open, title, children, busy, onCancel, ...action
       ref={dialogRef}
       className="confirm-dialog"
       onCancel={handleCancel}
-      aria-labelledby="confirm-title"
+      aria-labelledby={titleId}
     >
-      <h2 id="confirm-title">{title}</h2>
+      <h2 id={titleId}>{title}</h2>
       <div className="confirm-body">{children}</div>
       <DialogActions busy={busy} onCancel={onCancel} {...actions} />
     </dialog>

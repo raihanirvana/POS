@@ -27,7 +27,7 @@ function networkError() {
   });
 }
 
-function invalidResponse(status = 200) {
+export function invalidResponse(status = 200) {
   return new ApiError({
     status,
     code: 'INVALID_RESPONSE',

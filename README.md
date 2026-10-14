@@ -1,6 +1,6 @@
 # Seduh POS — portfolio fullstack
 
-Pengembangan React + Vite, Express, dan SQLite dilakukan per tiket. **POS-001 sampai POS-006 sudah selesai**: fondasi proyek; skema database, migrasi, dan seed; sesi demo pemilik/kasir dengan ruang data per pengunjung; API produk dan stok; API checkout dan transaksi atomik; serta shell React dengan halaman masuk demo. Halaman fitur (kasir, produk, transaksi, dashboard, laporan, pengaturan) masih ditandai "Belum tersedia" sampai tiketnya selesai. Lihat [daftar tiket](docs/tickets/README.md) dan [aturan proyek](AGENTS.md).
+Pengembangan React + Vite, Express, dan SQLite dilakukan per tiket. **POS-001 sampai POS-007 sudah selesai**: fondasi proyek; skema database, migrasi, dan seed; sesi demo pemilik/kasir dengan ruang data per pengunjung; API produk dan stok; API checkout dan transaksi atomik; shell React dengan halaman masuk demo; serta halaman Produk untuk pemilik (daftar, cari, filter, tambah, edit, hapus). Halaman Kasir, Transaksi, Dashboard, Laporan, dan Pengaturan masih ditandai "Belum tersedia" sampai tiketnya selesai. Lihat [daftar tiket](docs/tickets/README.md) dan [aturan proyek](AGENTS.md).
 
 ## Menjalankan fullstack
 
@@ -43,10 +43,12 @@ Tidak ada unit test. Verifikasi memakai lint, format, build, curl/API, dan brows
 ```text
 client/
   src/components/    shell, navigasi, dialog, dan komponen kecil lain
-  src/pages/         halaman masuk, placeholder fitur, 403, dan 404
-  src/hooks/         state sesi dan aksi akun
+  src/pages/         halaman masuk, Produk, placeholder fitur, 403, dan 404
+  src/components/products/  tabel, form, dan dialog produk
+  src/assets/menu/   foto menu preset lokal (sumber di SOURCES.md)
+  src/hooks/         state sesi, aksi akun, daftar produk, dan form
   src/session/       context sesi
-  src/lib/           API client, router History API, daftar route, format, ikon
+  src/lib/           API client, router History API, daftar route, format, ikon, aturan form produk
   dist/              hasil build (diabaikan Git)
 server/
   database/          koneksi, migrasi SQL, transaksi, dan seed

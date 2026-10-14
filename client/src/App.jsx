@@ -8,7 +8,11 @@ import { ForbiddenPage } from './pages/ForbiddenPage.jsx';
 import { LoginPage } from './pages/LoginPage.jsx';
 import { NotFoundPage } from './pages/NotFoundPage.jsx';
 import { PlaceholderPage } from './pages/PlaceholderPage.jsx';
+import { ProductsPage } from './pages/ProductsPage.jsx';
 import { SessionProvider } from './session/SessionProvider.jsx';
+
+// Halaman yang sudah dihubungkan ke API; route lain masih placeholder.
+const livePages = { '/produk': ProductsPage };
 
 // Pembatasan di UI hanya memudahkan navigasi; server tetap menolak dengan 401/403.
 function RouteContent({ route, role }) {
@@ -18,7 +22,8 @@ function RouteContent({ route, role }) {
   if (!route.roles.includes(role)) {
     return <ForbiddenPage route={route} />;
   }
-  return <PlaceholderPage route={route} />;
+  const Page = livePages[route.path];
+  return Page ? <Page /> : <PlaceholderPage route={route} />;
 }
 
 function SignedInRoutes({ pathname, session }) {

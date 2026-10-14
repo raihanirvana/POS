@@ -112,6 +112,22 @@ Setelah `npm run build`, jalankan `npm start` (atau `npm run dev`) pada database
 
 Respons 401 untuk `GET /api/session` saat belum masuk tampil sebagai log jaringan merah di console browser. Itu perilaku kontrak API, bukan error JavaScript.
 
+## Halaman Produk — POS-007
+
+Masuk sebagai Pemilik lalu buka `/produk`:
+
+1. Daftar 9 menu seed dengan foto lokal. Filter kategori dan pencarian (`latte`, `%`) memanggil API dan menampilkan kondisi kosong yang jelas.
+2. **Tambah produk** lalu simpan kosong: pesan di field Nama dan Harga, fokus ke Nama, tidak ada request. Isi nama `<img src=x onerror=alert(1)>`, kategori Pastry, stok 0: tersimpan dan tampil sebagai teks dengan pill "Habis".
+3. Edit harga satu menu: DevTools Network menunjukkan PATCH hanya berisi field yang berubah. Ganti kategori di form: foto kembali ke default kategori baru.
+4. Hapus menu: dialog konfirmasi (Escape membatalkan). Setelah dihapus, refresh dan bandingkan dengan `GET /api/products`.
+5. Blokir request di DevTools atau matikan server: form menampilkan "Produk belum tersimpan" dengan nilai tetap utuh; dialog hapus menampilkan error dan "Coba hapus lagi"; daftar menampilkan "Daftar belum diperbarui" dengan Coba lagi.
+6. Sebagai Kasir, `/produk` menampilkan halaman 403 dan menu Produk tidak ada.
+7. Lebar 360px: baris tabel menjadi kartu tanpa scroll horizontal. 768px: tabel muat dengan tombol Edit ikon saja.
+8. Tunda request simpan: kolom, kategori, foto, dan tombol tutup terkunci; Escape tidak menutup form. Error 400 memfokuskan kolom yang salah, dan field error non-string tidak membuat UI crash.
+9. Saat form edit harga terbuka, checkout menu yang sama lewat API. Simpan harga lalu pastikan PATCH tidak membawa stok dan stok hasil checkout tetap benar. Edit tanpa perubahan tidak mengirim request; struk lama mempertahankan harga awal.
+10. Simulasikan respons daftar dengan tag objek, preset null, kategori/label salah tipe, stok negatif, atau katalog kosong: pesan error dengan retry, tombol tambah tidak aktif, dan tidak ada halaman kosong. Setelah GET gagal, `aria-busy` harus false.
+11. Coba 60 emoji (diterima), 61 emoji serta karakter kontrol/surrogate invalid (ditolak tanpa request), stok/harga pecahan atau melewati batas, dan harga dengan nol di depan (pratinjau sesuai nominal). Refresh dan restart API mempertahankan perubahan.
+
 ## Checklist fitur untuk POS-012
 
 Belum dijalankan untuk fullstack; isi setelah tiket terkait selesai.

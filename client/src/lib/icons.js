@@ -18,4 +18,9 @@ export const iconPaths = {
   logout: 'M10 4H4v16h6 M15 8l4 4-4 4 M9 12h10',
   lock: 'M5 11h14v10H5z M8 11V7a4 4 0 0 1 8 0v4',
   check: 'm5 12 4 4 10-10',
+  search: 'M20 20l-5-5 M17 10a7 7 0 1 0-14 0 7 7 0 0 0 14 0',
+  plus: 'M12 5v14 M5 12h14',
+  edit: 'm4 16 12-12 4 4-12 12-5 1 1-5 M14 6l4 4',
+  trash: 'M3 6h18 M9 6V3h6v3 M6 6l1 15h10l1-15 M10 10v7 M14 10v7',
+  close: 'M5 5l14 14 M19 5 5 19',
 };
