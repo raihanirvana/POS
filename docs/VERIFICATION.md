@@ -185,21 +185,34 @@ Review POS-010 juga menguji ganti periode saat request tertunda/gagal (ekspor te
 9. PATCH tertunda menonaktifkan reset; GET setelah simpan menonaktifkan editor sampai data terbaru tiba. Respons pengaturan/reset invalid menampilkan error, tanpa klaim sukses.
 10. Trigger seed gagal → rollback persis; sesi yang dicabut/berakhir atau berganti peran saat request menunggu kunci ditolak tanpa perubahan. Bukti review dan regresi POS-007/008/010 ada di [POS-011](tickets/POS-011.md).
 
-## Checklist fitur untuk POS-012
+## Checklist integrasi — POS-012
 
-Belum dijalankan untuk fullstack; isi setelah tiket terkait selesai.
+Dijalankan 15 Oktober 2026 pada build produksi, mode dev (proxy Vite), dan Google Chrome headless/Playwright. Bukti lengkap ada di [POS-012](tickets/POS-012.md).
 
-- [ ] Dua pengunjung memiliki ruang data berbeda; logout dan sesi expired ditolak.
-- [ ] Kasir tidak bisa memakai API pengelolaan pemilik.
-- [ ] CRUD produk tetap tersimpan setelah restart server.
-- [ ] Checkout contoh Rp80.000, diskon 10%, uang Rp100.000: total Rp72.000, kembalian Rp28.000.
-- [ ] Uang kurang, qty negatif/pecahan, stok kurang, harga manipulasi, dan workspace asing ditolak.
-- [ ] Checkout bersamaan untuk stok terakhir tidak menyebabkan stok negatif.
-- [ ] Retry checkout dengan key sama tidak menambah transaksi atau mengurangi stok lagi.
-- [ ] Snapshot struk tidak berubah setelah harga atau identitas toko diedit.
-- [ ] Dashboard, laporan, rentang tanggal Jakarta, dan CSV sesuai data server.
-- [ ] Reset hanya menghapus data ruang demo yang dipilih.
-- [ ] API/network error mempunyai pesan dan jalur retry yang jelas.
-- [ ] Seluruh halaman tidak melebar pada mobile, tablet, dan desktop.
-- [ ] Dialog/keyboard/focus, reduced motion, print preview, dan input markup diperiksa.
-- [ ] Hosting yang benar-benar dipakai dicatat; backend tidak diklaim live sebelum verifikasi.
+- [x] Dua pengunjung memiliki ruang data berbeda; logout dan sesi expired ditolak.
+- [x] Kasir tidak bisa memakai API pengelolaan pemilik.
+- [x] CRUD produk tetap tersimpan setelah restart server.
+- [x] Checkout contoh Rp80.000, diskon 10%, uang Rp100.000: total Rp72.000, kembalian Rp28.000.
+- [x] Uang kurang, qty negatif/pecahan, stok kurang, harga manipulasi, dan workspace asing ditolak.
+- [x] Checkout bersamaan untuk stok terakhir tidak menyebabkan stok negatif.
+- [x] Retry checkout dengan key sama tidak menambah transaksi atau mengurangi stok lagi.
+- [x] Snapshot struk tidak berubah setelah harga atau identitas toko diedit.
+- [x] Dashboard, laporan, rentang tanggal Jakarta, dan CSV sesuai data server.
+- [x] Reset hanya menghapus data ruang demo yang dipilih.
+- [x] API/network error mempunyai pesan dan jalur retry yang jelas.
+- [x] Seluruh halaman tidak melebar pada mobile, tablet, dan desktop.
+- [x] Dialog/keyboard/focus, reduced motion, print preview, dan input markup diperiksa.
+- [x] Mutasi dari origin lain ditolak; body besar, rate login/API, dan kapasitas ruang demo dibatasi.
+- [x] Hosting yang benar-benar dipakai dicatat; backend tidak diklaim live (deployment = POS-013).
+
+Review tambahan POS-012 memeriksa origin kanonis dan konfigurasi invalid, 10.000 IP dan pemulihan jendela satu menit lewat HTTP aktual, kapasitas setelah restart/dua API, serta login yang berakhir saat menunggu kunci SQLite. Browser produksi dan proxy Vite diuji, prototype tetap berjalan, dan audit dependency produksi melaporkan 0 kerentanan saat verifikasi. Detail ada di [POS-012](tickets/POS-012.md).
+
+### Pemeriksaan keamanan cepat
+
+```sh
+curl -i -X POST -H 'content-type: application/json' -H 'Origin: https://evil.example' \
+  -d '{"role":"owner"}' http://127.0.0.1:3001/api/demo/sessions          # 403 ORIGIN_REJECTED
+curl -sI http://127.0.0.1:3001/ | grep -i -E 'content-security|x-frame'  # header keamanan
+DEMO_SESSION_LIMIT=2 npm start   # login ke-3 dari IP sama → 429 RATE_LIMITED + Retry-After
+DEMO_MAX_WORKSPACES=1 npm start  # ruang demo ke-2 → 503 DEMO_CAPACITY
+```

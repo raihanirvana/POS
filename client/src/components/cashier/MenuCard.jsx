@@ -2,9 +2,13 @@ import { formatRupiah } from '../../lib/format.js';
 import { menuImage } from '../../lib/menu-images.js';
 import { Icon } from '../Icon.jsx';
 
+// Penjelasan terlihat (bukan hanya tooltip) saat jumlah pesanan sudah mencapai stok.
 function stockText(product, inCart) {
   if (product.stock === 0) {
     return 'Stok habis';
+  }
+  if (inCart >= product.stock) {
+    return `Stok ${product.stock} · semua sudah di pesanan`;
   }
   return inCart > 0
     ? `Stok ${product.stock} · ${inCart} di pesanan`

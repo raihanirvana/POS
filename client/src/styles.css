@@ -1363,6 +1363,14 @@ th.numeric {
   font-size: 15px;
 }
 
+.stock-limit {
+  display: block;
+  margin-top: 4px;
+  color: #7a5919;
+  font-size: 11px;
+  font-weight: 600;
+}
+
 .cart-line-total {
   display: flex;
   flex-direction: column;

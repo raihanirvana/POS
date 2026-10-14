@@ -17,7 +17,7 @@ Kerjakan **satu tiket per tahap**. Setiap tiket mempunyai dependensi, kriteria p
 | [POS-009](POS-009.md) | Struk dan riwayat transaksi | POS-008 | Selesai |
 | [POS-010](POS-010.md) | Dashboard dan laporan penjualan | POS-005, POS-006 | Selesai |
 | [POS-011](POS-011.md) | Pengaturan kedai dan reset ruang demo | POS-007, POS-009, POS-010 | Selesai |
-| [POS-012](POS-012.md) | Pemeriksaan integrasi dan penyempurnaan demo | POS-009, POS-010, POS-011 | Belum dimulai |
+| [POS-012](POS-012.md) | Pemeriksaan integrasi dan penyempurnaan demo | POS-009, POS-010, POS-011 | Selesai |
 | [POS-013](POS-013.md) | Deployment fullstack dan panduan portfolio | POS-012 | Belum dimulai |
 
 ## Urutan kerja

@@ -15,8 +15,7 @@ function createDemoSessionHandler(database) {
     const result = startDemoSession(database, {
       role,
       currentAuth: request.auth,
-      now: new Date(),
-      ttlMinutes: config.demoTtlMinutes,
+      limits: { ttlMinutes: config.demoTtlMinutes, maxWorkspaces: config.maxWorkspaces },
     });
     setSessionCookie(request, response, result.token, result.auth.expiresAt);
     response.status(201).json({

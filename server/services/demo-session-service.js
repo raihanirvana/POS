@@ -1,4 +1,5 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { HttpError } from '../lib/http-error.js';
 import { seedWorkspaceData } from '../database/seed/index.js';
 import { withTransaction } from '../database/transaction.js';
 import {
@@ -8,6 +9,7 @@ import {
   revokeSession,
 } from '../repositories/session-repository.js';
 import {
+  countWorkspaces,
   deleteExpiredWorkspaces,
   deleteWorkspace,
   insertWorkspace,
@@ -20,13 +22,25 @@ function hashToken(token) {
   return createHash('sha256').update(token).digest('hex');
 }
 
-function openWorkspace(database, now, ttlMinutes) {
+// Kapasitas global membatasi pertumbuhan database dari demo publik.
+function assertCapacity(database, maxWorkspaces) {
+  if (countWorkspaces(database) >= maxWorkspaces) {
+    throw new HttpError(
+      503,
+      'DEMO_CAPACITY',
+      'Ruang demo sedang penuh. Coba lagi beberapa saat lagi.',
+    );
+  }
+}
+
+function openWorkspace(database, now, limits) {
   const createdAt = now.toISOString();
   deleteExpiredWorkspaces(database, createdAt);
+  assertCapacity(database, limits.maxWorkspaces);
   const workspace = {
     id: randomUUID(),
     createdAt,
-    expiresAt: new Date(now.getTime() + ttlMinutes * 60000).toISOString(),
+    expiresAt: new Date(now.getTime() + limits.ttlMinutes * 60000).toISOString(),
   };
   insertWorkspace(database, workspace);
   seedWorkspaceData(database, workspace.id, now);
@@ -34,15 +48,19 @@ function openWorkspace(database, now, ttlMinutes) {
 }
 
 // Ganti peran memakai ruang demo yang sama; sesi lama dicabut di transaksi yang sama.
-function continueWorkspace(database, currentAuth, nowIso) {
-  if (!currentAuth || currentAuth.workspaceExpiresAt <= nowIso) {
+function continueWorkspace(database, currentAuth, now) {
+  const current = currentAuth
+    ? resolveDemoSessionById(database, currentAuth.sessionId, now).auth
+    : null;
+  if (!current || current.workspaceId !== currentAuth.workspaceId) {
     return null;
   }
-  if (!revokeSession(database, currentAuth.sessionId, nowIso)) {
+  const nowIso = now.toISOString();
+  if (!revokeSession(database, current.sessionId, nowIso)) {
     return null;
   }
-  touchWorkspace(database, currentAuth.workspaceId, nowIso);
-  return { id: currentAuth.workspaceId, expiresAt: currentAuth.workspaceExpiresAt };
+  touchWorkspace(database, current.workspaceId, nowIso);
+  return { id: current.workspaceId, expiresAt: current.workspaceExpiresAt };
 }
 
 function issueSession(database, workspace, role, nowIso) {
@@ -59,12 +77,13 @@ function issueSession(database, workspace, role, nowIso) {
   return { token, session };
 }
 
-export function startDemoSession(database, { role, currentAuth, now, ttlMinutes }) {
+export function startDemoSession(database, { role, currentAuth, limits }) {
   return withTransaction(database, () => {
+    const now = new Date();
     const nowIso = now.toISOString();
     const workspace =
-      continueWorkspace(database, currentAuth, nowIso) ??
-      openWorkspace(database, now, ttlMinutes);
+      continueWorkspace(database, currentAuth, now) ??
+      openWorkspace(database, now, limits);
     const { token, session } = issueSession(database, workspace, role, nowIso);
     return {
       token,

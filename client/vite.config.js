@@ -13,7 +13,12 @@ export default defineConfig({
     host: '127.0.0.1',
     port: config.webPort,
     strictPort: true,
-    proxy: { '/api': apiTarget, '/prototype': apiTarget },
+    // changeOrigin false: Host asli (localhost:WEB_PORT) diteruskan sehingga pemeriksaan
+    // Origin di Express melihat request dev sebagai same-origin.
+    proxy: {
+      '/api': { target: apiTarget, changeOrigin: false },
+      '/prototype': { target: apiTarget, changeOrigin: false },
+    },
   },
   build: { outDir: 'dist', emptyOutDir: true },
 });

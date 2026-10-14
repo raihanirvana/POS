@@ -54,6 +54,11 @@ export function OrderLine({ line, locked, onChange }) {
           {line.product ? formatRupiah(line.unitPrice) : 'Tidak tersedia'}
         </span>
         <QuantityControl line={line} locked={locked} onChange={onChange} />
+        {line.product && line.quantity >= line.product.stock ? (
+          <small className="stock-limit">
+            Sudah mencapai stok ({line.product.stock})
+          </small>
+        ) : null}
       </div>
       <LineTotal line={line} locked={locked} onChange={onChange} />
     </li>

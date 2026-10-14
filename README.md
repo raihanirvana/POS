@@ -1,78 +1,98 @@
 # Seduh POS — portfolio fullstack
 
-Pengembangan React + Vite, Express, dan SQLite dilakukan per tiket. **POS-001 sampai POS-011 sudah selesai**: fondasi proyek; skema database, migrasi, dan seed; sesi demo pemilik/kasir dengan ruang data per pengunjung; API produk dan stok; API checkout dan transaksi atomik; shell React dengan halaman masuk demo; halaman Produk untuk pemilik (daftar, cari, filter, tambah, edit, hapus); halaman Kasir dengan pesanan, diskon, pembayaran tunai/QRIS simulasi, dan struk; halaman Transaksi dengan riwayat, pencarian, filter tanggal, paginasi, buka ulang dan cetak struk; Dashboard dan Laporan penjualan (grafik, produk terlaris, stok menipis, ekspor CSV); serta Pengaturan toko dan reset ruang demo. Semua halaman sudah terhubung ke API; pemeriksaan integrasi menyeluruh dilakukan di POS-012. Lihat [daftar tiket](docs/tickets/README.md) dan [aturan proyek](AGENTS.md).
+Demo aplikasi kasir kedai kopi untuk menunjukkan hasil jasa pembuatan web: React + Vite di frontend, Express + SQLite (`node:sqlite`) di backend. Pengunjung masuk sebagai **Kasir** atau **Pemilik** tanpa daftar, lalu mencoba transaksi lengkap di ruang data miliknya sendiri. Semua tiket POS-001 sampai POS-012 selesai; deployment fullstack (POS-013) belum. Lihat [daftar tiket](docs/tickets/README.md), [PRD](PRD.md), dan [aturan proyek](AGENTS.md).
 
-## Menjalankan fullstack
+## Yang bisa dicoba
 
-Gunakan Node.js minimal 22.13.0. `.nvmrc` memilih 22.20.0. SQLite memakai modul `node:sqlite` bawaan Node sehingga tidak perlu memasang database server. Pada Node 22 modul ini masih mengeluarkan experimental warning.
+- **Masuk demo** sebagai Kasir atau Pemilik. Ganti peran pada ruang demo yang sama dari bagian atas, atau keluar (ruang demo dihapus).
+- **Kasir:** menu bergambar, pencarian dan kategori, pesanan dengan jumlah, pelanggan, jenis pesanan, dan diskon. Pembayaran tunai (kembalian) atau QRIS simulasi, lalu struk yang bisa dicetak.
+- **Transaksi:** riwayat dengan pencarian, filter tanggal WIB, paginasi, dan buka ulang/cetak struk lama.
+- **Dashboard** (pemilik): penjualan hari ini, grafik 7 hari, favorit, stok menipis, dan transaksi terbaru.
+- **Produk** (pemilik): tambah, edit, dan hapus menu dengan foto preset; stok langsung terpakai di Kasir.
+- **Laporan** (pemilik): periode tanggal, pendapatan setelah diskon (bukan laba), tunai/QRIS, per hari, produk terlaris, dan ekspor CSV.
+- **Pengaturan** (pemilik): identitas toko di struk baru, dan reset data contoh.
 
-Dari folder `seduh-pos`:
+## Batasan demo
+
+- **Login:** login demo tanpa password; peran hanya membatasi fitur di demo, bukan autentikasi produksi.
+- **Pembayaran:** sepenuhnya simulasi. QRIS tidak memakai kode QR atau payment gateway; struk diberi label demo.
+- **Ruang demo:** berlaku 12 jam (`DEMO_TTL_MINUTES`). Pesanan yang sedang dibuat hanya ada di memori tab.
+- **Rate limit:** hitungan per IP ada di memori proses dan hilang saat restart. Setiap limiter menyimpan maksimal 10.000 IP; IP baru ditolak sementara saat penuh. Banyak instance memerlukan penyimpanan hitungan bersama.
+- **Kapasitas ruang demo:** dihitung dari SQLite, sehingga restart tetap mempertahankan batas. Proses yang berbagi database juga berbagi jumlah workspace.
+- **Browser:** diverifikasi di Google Chrome (headless, Playwright) pada lebar 360, 768, dan 1280px. Firefox, Safari, dialog cetak sistem, printer fisik, dan pembukaan CSV di Excel belum diuji.
+- **Hosting:** `.openai/hosting.json` masih menunjuk prototype statis di Sites. Backend Express **belum dideploy**; hosting Node.js dengan disk persisten ditangani POS-013.
+
+## Menjalankan
+
+Gunakan Node.js minimal 22.13.0 (`.nvmrc`: 22.20.0). Pada Node 22, `node:sqlite` masih mengeluarkan experimental warning. Dari folder `seduh-pos`:
 
 ```sh
 npm install
-npm run dev
+npm run dev          # Vite di http://localhost:5173, API di http://127.0.0.1:3001
 ```
 
-Buka http://localhost:5173. API berjalan di http://127.0.0.1:3001; frontend meneruskan `/api` melalui proxy Vite. Tanpa sesi, aplikasi membuka `/masuk` untuk memilih peran demo **Kasir** atau **Pemilik**. Setelah masuk, menu mengikuti peran, refresh tetap masuk, dan tombol di bagian atas dipakai untuk ganti peran atau keluar. Demo desain sebelumnya ada di http://localhost:5173/prototype/index.html.
+Untuk mode produksi lokal:
 
-Jika port frontend 5173 sudah digunakan proyek lain, atur `WEB_PORT=5174` pada `.env` atau jalankan `WEB_PORT=5174 npm run dev`. Port API dapat diubah lewat `PORT`. Server tidak mengambil alih proses lain.
+```sh
+npm run build
+npm start            # React + API pada http://127.0.0.1:3001
+```
 
-Konfigurasi opsional: salin `.env.example` menjadi `.env`. Default tetap dapat berjalan tanpa `.env`. Untuk hosting, gunakan `HOST=0.0.0.0` dan `PORT` yang ditentukan penyedia. Jika HOST adalah `0.0.0.0` atau `::`, target proxy pengembangan tetap memakai loopback.
+Migrasi SQLite berjalan otomatis saat API start (`data/seduh.sqlite`, diabaikan Git). `npm run db:migrate` dan `npm run db:seed` aman dijalankan berulang. Prototype HTML lama tetap tersedia di `/prototype/index.html`. Jika port 5173 terpakai, jalankan `WEB_PORT=5174 npm run dev`.
 
-`DEMO_TTL_MINUTES` mengatur umur ruang demo dan sesinya (default 720 menit). `TRUST_PROXY` dibiarkan `false` saat lokal; isi jumlah hop atau alamat reverse proxy HTTPS saat hosting agar cookie sesi mendapat atribut `Secure`. Nilai `true` ditolak karena memercayai semua proxy.
+## Konfigurasi
 
-## Kualitas dan build
+Salin `.env.example` menjadi `.env` bila perlu; semua nilai punya default.
+
+| Variabel | Default | Fungsi |
+| --- | --- | --- |
+| `HOST` / `PORT` / `WEB_PORT` | `127.0.0.1` / `3001` / `5173` | Alamat API dan dev server; gunakan `HOST=0.0.0.0` saat hosting |
+| `DATABASE_PATH` | `./data/seduh.sqlite` | Lokasi file SQLite (harus di disk persisten saat hosting) |
+| `DEMO_TTL_MINUTES` | `720` | Umur ruang demo dan sesinya |
+| `TRUST_PROXY` | `false` | Jumlah hop/alamat reverse proxy HTTPS agar cookie mendapat `Secure`; `true` ditolak |
+| `ALLOWED_ORIGINS` | kosong | Origin HTTP(S) tambahan, dipisah koma; tanpa path/kredensial/query/fragment. Dinormalisasi, nilai invalid menggagalkan startup |
+| `DEMO_SESSION_LIMIT` | `30` | Maksimal masuk/ganti peran per IP per 10 menit |
+| `API_RATE_LIMIT` | `300` | Maksimal request API per IP per menit |
+| `DEMO_MAX_WORKSPACES` | `500` | Maksimal ruang demo aktif di server (lebih dari itu → 503) |
+
+## Keamanan demo
+
+- **Data:** workspace dan peran berasal dari sesi server, query SQLite berparameter, dan harga/total/stok dihitung server. Checkout memakai transaksi atomik dan idempotency key.
+- **Sesi:** cookie `seduh_session` bersifat HttpOnly + SameSite=Strict (+ Secure di HTTPS), dan database hanya menyimpan hash token.
+- **Mutasi:** POST/PATCH/DELETE dengan `Origin` asing atau `Sec-Fetch-Site: cross-site` ditolak 403. Body JSON maksimal 100 KB.
+- **Header:** CSP (`script-src 'self'`), `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, dan HSTS saat HTTPS.
+
+Detail ada di [API.md](docs/API.md#keamanan-dan-batas).
+
+## Kualitas
 
 ```sh
 npm run format
-npm run check
-npm run build
-npm start
+npm run check        # ESLint (maks 25 baris per fungsi, tanpa inline disable) + Prettier + build
 ```
 
-Setelah build, `npm start` menyajikan frontend React dan API pada http://127.0.0.1:3001. Output React ada di `client/dist/`. SQLite dibuat di `data/seduh.sqlite` secara otomatis dan migrasi dijalankan saat API start. Runtime data tidak masuk Git.
+Tidak ada unit test, sesuai instruksi pemilik proyek. Verifikasi memakai lint, format, build, curl/API, dan browser; langkahnya ada di [panduan verifikasi](docs/VERIFICATION.md), dan bukti per tiket ada di `docs/tickets/`.
 
-Database dapat disiapkan manual dengan `npm run db:migrate` dan diisi workspace contoh dengan `npm run db:seed`. Keduanya aman dijalankan berulang. Detail skema ada di [DATABASE.md](docs/DATABASE.md).
-
-ESLint menetapkan maksimum **25 baris per fungsi**, termasuk komentar, baris kosong, callback, IIFE, dan JSX. Inline disable dilarang. Prettier menjaga format dan lebar kode; kode tidak boleh dipadatkan untuk mengakali batas. Pemeriksaan diterapkan pada kode fullstack aktif; prototype dan build output dikecualikan.
-
-Tidak ada unit test. Verifikasi memakai lint, format, build, curl/API, dan browser/manual. Detail ada di [panduan verifikasi](docs/VERIFICATION.md).
-
-## Struktur fullstack
+## Struktur
 
 ```text
-client/
-  src/components/    shell, navigasi, dialog, dan komponen kecil lain
-  src/pages/         halaman masuk, Produk, Kasir, placeholder fitur, 403, dan 404
-  src/components/products/  tabel, form, dan dialog produk
-  src/components/cashier/   menu, panel pesanan, dan dialog pembayaran
-  src/components/receipt/   struk dari snapshot transaksi, dialog dan cetak
-  src/components/transactions/  riwayat, filter, dan paginasi
-  src/components/charts/    grafik kolom penjualan dan tampilan tabelnya
-  src/components/reports/   tile, produk terlaris, filter periode laporan
-  src/components/settings/  form identitas kedai dan reset demo
-  src/cart/          context pesanan, pembayaran tertunda, dan struk (di memori browser)
-  src/assets/menu/   foto menu preset lokal (sumber di SOURCES.md)
-  src/hooks/         state sesi, aksi akun, daftar produk, dan form
-  src/session/       context sesi
-  src/lib/           API client, router History API, daftar route, format, ikon, aturan form produk
-  dist/              hasil build (diabaikan Git)
+client/src/
+  pages/             Masuk, Kasir, Dashboard, Produk, Transaksi, Laporan, Pengaturan, 403, 404
+  components/        shell, dialog, dan komponen per fitur (cashier, products, receipt, …)
+  hooks/ cart/ session/   state sesi, keranjang/pembayaran, dan data remote
+  lib/               API client, router History API, route, format, aturan form
+  assets/menu/       foto menu lokal (sumber di SOURCES.md)
 server/
-  database/          koneksi, migrasi SQL, transaksi, dan seed
-  lib/               waktu Asia/Jakarta, rupiah, katalog produk, cookie sesi, HttpError
-  middleware/        konteks request, sesi/peran, dan error
-  repositories/      query SQLite per tabel
-  services/          aturan bisnis (sesi demo, produk, checkout/transaksi)
-  validation/        validasi body request
+  database/          koneksi, migrasi SQL, transaksi, seed
+  middleware/        konteks request, sesi/peran, origin, rate limit, header, error
+  repositories/      query SQLite
+  services/          aturan bisnis (sesi, produk, checkout, laporan, pengaturan)
+  validation/        validasi request
   routes/            endpoint API
-scripts/             perintah db:migrate dan db:seed
-docs/
-  tickets/           backlog, kriteria selesai, bukti verifikasi
-data/                database lokal (diabaikan Git)
+scripts/             db:migrate dan db:seed
+docs/                API, DATABASE, VERIFICATION, tiket
 dist/                prototype HTML terdahulu
 ```
-
-Kontrak dan status endpoint ada di [API.md](docs/API.md). `.openai/hosting.json` masih menunjuk prototype statis di Sites. Backend Express belum dideploy ke link tersebut; hosting Node.js dengan disk persisten ditangani pada POS-013.
 
 ---
 

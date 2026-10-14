@@ -47,7 +47,7 @@ Publik. Body hanya boleh berisi `role`:
 ```
 
 - Tanpa sesi aktif: membuat ruang demo baru, mengisi data contoh, dan menerbitkan sesi dalam satu transaksi SQLite. Ruang demo yang sudah kedaluwarsa ikut dibersihkan.
-- Dengan sesi aktif: **ganti peran** pada ruang demo yang sama. Token lama dicabut, token baru diterbitkan, dan masa berlaku ruang demo tidak diperpanjang.
+- Dengan sesi aktif: **ganti peran** pada ruang demo yang sama. Token lama dicabut, token baru diterbitkan, dan masa berlaku ruang demo tidak diperpanjang. Waktu dan sesi diperiksa ulang setelah kunci tulis didapat; bila workspace berakhir ketika request menunggu, login membuat workspace baru menurut batas kapasitas.
 
 HTTP 201:
 
@@ -349,6 +349,32 @@ Pemilik. Body wajib `{ "confirmation": "reset" }`; tanpa konfirmasi itu mendapat
 Bila ada langkah yang gagal, seluruh perubahan di-rollback. Sesi tetap berlaku dan workspace lain tidak tersentuh. Hasil 200 `{ "reset": true, "products": 9, "transactions": 30 }`; jumlah transaksi bergantung jam saat reset.
 
 ID produk berganti setelah reset, sehingga replay idempotency key lama dengan produk lama mendapat 409 `PRODUCT_UNAVAILABLE`, bukan transaksi ganda. Reset tidak memperpanjang masa berlaku workspace/sesi. Frontend mengunci keranjang selama request dan mengabaikan respons pembayaran yang dibatalkan oleh reset. Endpoint reset belum memiliki idempotency key: retry sesudah respons hilang menjalankan reset baru.
+
+## Keamanan dan batas
+
+Berlaku untuk semua endpoint `/api` (POS-012):
+
+| Status | Kode | Kapan |
+| --- | --- | --- |
+| 403 | `ORIGIN_REJECTED` | POST/PATCH/DELETE dengan header `Origin` selain origin aplikasi (atau `ALLOWED_ORIGINS`), atau tanpa `Origin` tetapi `Sec-Fetch-Site: cross-site`/`same-site` |
+| 413 | `BODY_TOO_LARGE` | Body JSON lebih dari 100 KB |
+| 415 | `UNSUPPORTED_MEDIA_TYPE` | Charset/encoding body tidak didukung |
+| 429 | `RATE_LIMITED` | Melebihi `API_RATE_LIMIT` request per IP per menit (default 300), atau `DEMO_SESSION_LIMIT` POST `/api/demo/sessions` per IP per 10 menit (default 30); disertai `Retry-After` dalam detik |
+| 503 | `DEMO_CAPACITY` | Membuka ruang demo baru saat ruang demo aktif sudah mencapai `DEMO_MAX_WORKSPACES` (default 500). Ganti peran pada ruang demo yang ada tetap diizinkan |
+
+Origin dibandingkan dalam bentuk kanonis HTTP(S), sehingga nama host dan port bawaan dinormalisasi. `ALLOWED_ORIGINS` menerima daftar origin yang valid (root slash opsional), bukan wildcard, `null`, atau URL dengan kredensial/path/query/fragment. Ini pemeriksaan origin, bukan konfigurasi CORS.
+
+Klien non-browser tanpa `Origin`/`Sec-Fetch-Site` (misalnya curl) tetap diterima. Cookie sudah `SameSite=Strict`, dan body mutasi wajib JSON.
+
+Semua respons membawa:
+
+- `Content-Security-Policy` (`default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; …`);
+- `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: same-origin`, `Cross-Origin-Opener-Policy: same-origin`, dan `Permissions-Policy`;
+- `Strict-Transport-Security` saat request HTTPS.
+
+Hitungan rate limit ada di memori proses dan hilang saat restart; banyak instance membutuhkan penyimpanan hitungan bersama. Setiap limiter dibatasi 10.000 entri IP. IP baru mendapat 429 saat penyimpanan penuh; entri aktif tidak digusur, dan entri kedaluwarsa dibersihkan paling sering sekali per detik saat diperlukan.
+
+Kapasitas workspace dihitung dari tabel SQLite di dalam transaksi tulis setelah pembersihan data kedaluwarsa. Batas tetap berlaku sesudah restart serta pada proses yang berbagi database yang sama.
 
 ## Ringkasan endpoint
 

@@ -33,3 +33,7 @@ export function clearWorkspaceData(database, workspaceId) {
     .prepare('UPDATE demo_workspaces SET seeded_at = NULL WHERE id = ?')
     .run(workspaceId);
 }
+
+export function countWorkspaces(database) {
+  return database.prepare('SELECT COUNT(*) AS total FROM demo_workspaces').get().total;
+}
