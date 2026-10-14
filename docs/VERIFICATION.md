@@ -8,6 +8,26 @@
 4. Catat perintah, hasil, browser/viewport, dan keterbatasan di bagian Bukti selesai.
 5. Tandai tiket selesai hanya setelah seluruh kriterianya tercapai.
 
+## Persiapan deployment — POS-013
+
+Target dipilih: Render Free, satu origin React + Express, SQLite sementara. Detail dan
+langkah live ada di [DEPLOYMENT.md](DEPLOYMENT.md). Deployment publik belum diverifikasi.
+
+- [x] Build dengan environment Render (`NODE_ENV=production`, `HOST=0.0.0.0`,
+  `TRUST_PROXY=1`, `VITE_DEMO_EPHEMERAL_STORAGE=true`) lolos lint/format/build.
+- [x] Sintaks shell dan YAML diperiksa; flag create cocok dengan Render CLI v2.29.0.
+- [x] Server produksi lokal: semua route HTML dan health API 200, login/checkout jalan.
+- [x] Proxy HTTPS simulasi: cookie Secure/HttpOnly/SameSite dan HSTS; origin asing 403.
+- [x] Chrome 360/768/1280: catatan data sementara tampil tanpa scroll horizontal.
+- [x] File SQLite dihapus saat API berhenti: sesi lama 401, browser kembali ke halaman
+  masuk, dan login baru membuat data contoh. Restart memakai file sama mempertahankan sesi.
+- [ ] Login/workspace Render, validasi Blueprint dengan layanan Render, dan deploy sukses.
+- [ ] Cookie, health, checkout, isolasi dan reset diuji pada URL HTTPS publik sebenarnya.
+- [ ] Workflow GitHub Actions benar-benar lolos; URL live dicatat setelah diperiksa.
+
+Tidak membuat unit test. Database pengembangan tidak disentuh. Tidak ada disk berbayar
+atau backup lintas restart yang dijanjikan untuk target Free.
+
 ## Fondasi — POS-001
 
 ```sh

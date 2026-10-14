@@ -1,6 +1,6 @@
 # Seduh POS — portfolio fullstack
 
-Demo aplikasi kasir kedai kopi untuk menunjukkan hasil jasa pembuatan web: React + Vite di frontend, Express + SQLite (`node:sqlite`) di backend. Pengunjung masuk sebagai **Kasir** atau **Pemilik** tanpa daftar, lalu mencoba transaksi lengkap di ruang data miliknya sendiri. Semua tiket POS-001 sampai POS-012 selesai; deployment fullstack (POS-013) belum. Lihat [daftar tiket](docs/tickets/README.md), [PRD](PRD.md), dan [aturan proyek](AGENTS.md).
+Demo aplikasi kasir kedai kopi untuk menunjukkan hasil jasa pembuatan web: React + Vite di frontend, Express + SQLite (`node:sqlite`) di backend. Pengunjung masuk sebagai **Kasir** atau **Pemilik** tanpa daftar, lalu mencoba transaksi lengkap di ruang data miliknya sendiri. Semua tiket POS-001 sampai POS-012 selesai; POS-013 menyiapkan Render Free, belum ada URL publik yang diverifikasi. Lihat [panduan deploy](docs/DEPLOYMENT.md), [daftar tiket](docs/tickets/README.md), [PRD](PRD.md), dan [aturan proyek](AGENTS.md).
 
 ## Yang bisa dicoba
 
@@ -16,11 +16,11 @@ Demo aplikasi kasir kedai kopi untuk menunjukkan hasil jasa pembuatan web: React
 
 - **Login:** login demo tanpa password; peran hanya membatasi fitur di demo, bukan autentikasi produksi.
 - **Pembayaran:** sepenuhnya simulasi. QRIS tidak memakai kode QR atau payment gateway; struk diberi label demo.
-- **Ruang demo:** berlaku 12 jam (`DEMO_TTL_MINUTES`). Pesanan yang sedang dibuat hanya ada di memori tab.
+- **Ruang demo:** maksimal 12 jam (`DEMO_TTL_MINUTES`). Pesanan yang sedang dibuat hanya ada di memori tab. Pada target Render Free, SQLite sementara: sleep/restart/deploy ulang dapat menghapus sesi dan data lebih awal; pengunjung masuk lagi untuk data contoh baru.
 - **Rate limit:** hitungan per IP ada di memori proses dan hilang saat restart. Setiap limiter menyimpan maksimal 10.000 IP; IP baru ditolak sementara saat penuh. Banyak instance memerlukan penyimpanan hitungan bersama.
-- **Kapasitas ruang demo:** dihitung dari SQLite, sehingga restart tetap mempertahankan batas. Proses yang berbagi database juga berbagi jumlah workspace.
+- **Kapasitas ruang demo:** dihitung dari SQLite. Batas tetap dihitung dari workspace yang tersimpan selama file database masih tersedia; proses yang berbagi database juga berbagi jumlah workspace.
 - **Browser:** diverifikasi di Google Chrome (headless, Playwright) pada lebar 360, 768, dan 1280px. Firefox, Safari, dialog cetak sistem, printer fisik, dan pembukaan CSV di Excel belum diuji.
-- **Hosting:** `.openai/hosting.json` masih menunjuk prototype statis di Sites. Backend Express **belum dideploy**; hosting Node.js dengan disk persisten ditangani POS-013.
+- **Hosting:** `.openai/hosting.json` masih menunjuk prototype statis di Sites. Backend Express **belum dideploy**; konfigurasi Render Free satu service ada di `render.yaml`, tanpa disk berbayar. Server gratis tidur setelah 15 menit tanpa traffic dan butuh waktu untuk aktif lagi.
 
 ## Menjalankan
 
@@ -47,7 +47,8 @@ Salin `.env.example` menjadi `.env` bila perlu; semua nilai punya default.
 | Variabel | Default | Fungsi |
 | --- | --- | --- |
 | `HOST` / `PORT` / `WEB_PORT` | `127.0.0.1` / `3001` / `5173` | Alamat API dan dev server; gunakan `HOST=0.0.0.0` saat hosting |
-| `DATABASE_PATH` | `./data/seduh.sqlite` | Lokasi file SQLite (harus di disk persisten saat hosting) |
+| `DATABASE_PATH` | `./data/seduh.sqlite` | Lokasi file SQLite; gunakan disk persisten jika data harus bertahan. Render Free memakai file sementara |
+| `VITE_DEMO_EPHEMERAL_STORAGE` | `false` | `true` saat build untuk menampilkan catatan data sementara di halaman masuk |
 | `DEMO_TTL_MINUTES` | `720` | Umur ruang demo dan sesinya |
 | `TRUST_PROXY` | `false` | Jumlah hop/alamat reverse proxy HTTPS agar cookie mendapat `Secure`; `true` ditolak |
 | `ALLOWED_ORIGINS` | kosong | Origin HTTP(S) tambahan, dipisah koma; tanpa path/kredensial/query/fragment. Dinormalisasi, nilai invalid menggagalkan startup |
@@ -64,6 +65,21 @@ Salin `.env.example` menjadi `.env` bila perlu; semua nilai punya default.
 
 Detail ada di [API.md](docs/API.md#keamanan-dan-batas).
 
+## Deploy Render Free
+
+Siapkan akun Render dan hubungkan GitHub `raihanirvana/POS`. Setelah Render CLI terpasang:
+
+```sh
+npm run render:login                 # otorisasi di browser, lalu pilih workspace
+npm run deploy:render -- --create    # sekali untuk membuat service Free
+```
+
+Alternatif: **New → Blueprint**, pilih repo dan terapkan `render.yaml`. Pilih satu cara
+pembuatan service. Root Directory kosong: root Git sudah berisi `package.json`.
+Panduan lengkap, redeploy, batas data sementara, dan pemeriksaan URL live ada di
+[DEPLOYMENT.md](docs/DEPLOYMENT.md). Login Render di mesin pengembangan masih diperlukan;
+URL publik belum tersedia.
+
 ## Kualitas
 
 ```sh
@@ -72,6 +88,9 @@ npm run check        # ESLint (maks 25 baris per fungsi, tanpa inline disable) +
 ```
 
 Tidak ada unit test, sesuai instruksi pemilik proyek. Verifikasi memakai lint, format, build, curl/API, dan browser; langkahnya ada di [panduan verifikasi](docs/VERIFICATION.md), dan bukti per tiket ada di `docs/tickets/`.
+
+GitHub Actions menjalankan check pada push `main` dan pull request; build Render juga
+menjalankan check sebelum start. Eksekusi CI di GitHub belum diverifikasi.
 
 ## Struktur
 
@@ -89,7 +108,7 @@ server/
   services/          aturan bisnis (sesi, produk, checkout, laporan, pengaturan)
   validation/        validasi request
   routes/            endpoint API
-scripts/             db:migrate dan db:seed
+scripts/             db:migrate, db:seed, dan deploy Render CLI
 docs/                API, DATABASE, VERIFICATION, tiket
 dist/                prototype HTML terdahulu
 ```

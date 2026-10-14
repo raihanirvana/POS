@@ -87,6 +87,12 @@ Alur pengelolaan: Produk → tambah/edit → simpan → menu kasir memakai data 
 
 Data disimpan di SQLite di server dan dibatasi per ruang demo. Browser hanya menyimpan cookie sesi HttpOnly; pesanan yang sedang dibuat ada di memori tab. Tidak ada data yang dikirim ke server pembayaran. Ruang demo kedaluwarsa dihapus otomatis saat pengunjung baru masuk; keluar dari demo langsung menghapus ruang demo.
 
+Hosting demo yang dipilih adalah Render Free dengan SQLite sementara. Sleep, restart,
+dan deploy ulang dapat menghapus sesi serta seluruh data percobaan sebelum batas 12 jam.
+Pengunjung masuk lagi untuk mendapat data contoh baru. Catatan ditampilkan di halaman
+masuk. Persistensi lintas restart dan backup hosting tidak termasuk target gratis ini;
+deployment publik belum diverifikasi. Detail ada di [panduan deploy](docs/DEPLOYMENT.md).
+
 ## 8. Antarmuka
 
 Identitas contoh: Seduh, kedai kopi lingkungan dengan menu kopi susu, espresso, matcha, teh, dan pastry. Warna hijau daun menunjukkan tindakan utama; foto menu membantu mengenali produk; panel pesanan memisahkan pemilihan menu dan pembayaran. Detail desain ada di [DESIGN.md](DESIGN.md).
@@ -121,7 +127,7 @@ Seluruh antarmuka berbahasa Indonesia dengan rupiah dan waktu WIB.
 | Bayar tunai kurang dari total | Pesan menunjukkan kekurangan dan transaksi tidak dibuat |
 | Konfirmasi QRIS simulasi | Transaksi metode QRIS tersimpan tanpa menghubungi payment gateway |
 | Tambah melebihi stok | Jumlah tetap pada batas stok dan pengguna mendapat penjelasan |
-| Buka ulang browser | Produk, transaksi, dan pengaturan tetap tersedia selama sesi demo berlaku |
+| Buka ulang browser | Produk, transaksi, dan pengaturan tetap tersedia selama sesi dan file database masih berlaku; jika hosting Free mereset data, pengunjung masuk lagi |
 | Edit harga setelah penjualan | Struk lama tetap menggunakan harga saat penjualan |
 | Filter laporan dan ekspor | CSV sesuai transaksi yang masuk rentang pilihan |
 | Reset lalu batalkan | Data tetap; konfirmasi reset mengembalikan contoh awal |

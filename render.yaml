@@ -1,0 +1,25 @@
+# Render Free: SQLite bersifat sementara; data hilang saat sleep/restart/redeploy.
+services:
+  - type: web
+    name: seduh-pos
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: npm ci --include=dev && npm run check
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: '22.20.0'
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: TRUST_PROXY
+        value: '1'
+      - key: DATABASE_PATH
+        value: ./data/seduh.sqlite
+      - key: VITE_DEMO_EPHEMERAL_STORAGE
+        value: 'true'

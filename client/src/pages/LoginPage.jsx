@@ -26,6 +26,9 @@ const facts = [
   'Tanpa daftar dan tanpa password',
   'Setiap kunjungan mendapat ruang data sendiri dengan menu dan transaksi contoh',
   'Pembayaran tunai dan QRIS hanya simulasi',
+  ...(import.meta.env.VITE_DEMO_EPHEMERAL_STORAGE === 'true'
+    ? ['Data percobaan bisa direset saat demo aktif kembali.']
+    : []),
 ];
 
 function LoginIntro() {
