@@ -37,7 +37,8 @@ Semua tabel domain memiliki `workspace_id` dengan `ON DELETE CASCADE` ke `demo_w
 - SQLite menerima jam `24:00`, tetapi aplikasi memakai `00:00` pada hari berikutnya. Migrasi 002 menormalisasi timestamp lama pada instant yang sama; trigger menolak jam 24 pada INSERT/UPDATE berikutnya, termasuk kolom waktu nullable.
 - Uang adalah integer rupiah. Harga 1.000–10.000.000, stok 0–100.000, qty 1–100.000, diskon 0–100%.
 - CHECK memastikan `discount_amount = round(subtotal × persen / 100)`, `total = subtotal − diskon`, `line_total = harga × qty`, uang diterima ≥ total, kembalian = diterima − total, dan QRIS tidak punya kembalian.
-- `subtotal = Σ line_total` tidak bisa ditegakkan CHECK SQLite; service checkout (POS-005) wajib menghitungnya di server, memakai `server/lib/money.js`.
+- `subtotal = Σ line_total` tidak bisa ditegakkan CHECK SQLite; service checkout (`server/services/transaction-service.js`) menghitungnya dari harga database memakai `server/lib/money.js`.
+- Checkout mengurangi stok dengan `UPDATE … WHERE stock >= qty` di dalam `BEGIN IMMEDIATE`, sehingga stok tidak pernah negatif walau ada beberapa proses API.
 - `idempotency_key` dan `number` unik per workspace. Seed memakai key `seed-<nomor>`.
 - Foto produk berupa kunci preset (`iced-coffee`, `latte`, `americano`, `matcha`, `chocolate`, `croissant`, `tea`, `cinnamon`), bukan URL bebas.
 

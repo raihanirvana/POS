@@ -4,3 +4,8 @@ export function calculateTotals(lines, discountPercent) {
   const discountAmount = Math.round((subtotal * discountPercent) / 100);
   return { subtotal, discountAmount, total: subtotal - discountAmount };
 }
+
+// Contoh: 72000 → "Rp72.000".
+export function formatRupiah(value) {
+  return `Rp${value.toLocaleString('id-ID')}`;
+}

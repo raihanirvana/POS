@@ -1,3 +1,5 @@
+import { likePattern } from './sql.js';
+
 const productColumns = `id, name, category, price, stock, image_key, description, tag,
   created_at, updated_at`;
 
@@ -11,10 +13,6 @@ const updatableColumns = {
   description: 'description',
   tag: 'tag',
 };
-
-function likePattern(search) {
-  return search ? `%${search.replace(/[\\%_]/g, (match) => `\\${match}`)}%` : null;
-}
 
 export function listProducts(database, workspaceId, { category, search }) {
   return database

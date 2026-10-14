@@ -1,6 +1,6 @@
 # API Seduh POS
 
-API JSON satu origin dengan React. Prefix `/api`. Saat ini **healthcheck, sesi demo, dan produk** sudah diimplementasikan; endpoint lain di tabel rencana merupakan kontrak untuk tiket berikutnya. Semua respons `/api` memakai `Cache-Control: no-store`.
+API JSON satu origin dengan React. Prefix `/api`. Saat ini **healthcheck, sesi demo, produk, dan transaksi** sudah diimplementasikan; endpoint lain di tabel rencana merupakan kontrak untuk tiket berikutnya. Semua respons `/api` memakai `Cache-Control: no-store`.
 
 ## Endpoint aktif — POS-001
 
@@ -146,6 +146,131 @@ Pemilik. Field sama seperti POST, semuanya opsional, minimal satu. Body kosong m
 
 Pemilik. Hasil 204. Struk lama tetap utuh karena item transaksi menyimpan snapshot nama, kategori, foto, dan harga; referensi `product_id` pada item menjadi `NULL`.
 
+## Transaksi — POS-005
+
+Kasir dan pemilik. Tanpa sesi 401. Transaksi workspace lain atau ID salah format mendapat 404.
+
+### POST /api/transactions
+
+Checkout simulasi. Server menghitung harga, subtotal, diskon, total, dan kembalian dari **harga database saat ini**. Harga, total, peran, atau workspace dari klien tidak diterima (field tersebut ditolak 400).
+
+```json
+{
+  "idempotencyKey": "4f1c0a3e-checkout-01",
+  "items": [
+    { "productId": "…", "quantity": 2 },
+    { "productId": "…", "quantity": 1 }
+  ],
+  "discountPercent": 10,
+  "customerName": "Raka",
+  "orderType": "dine_in",
+  "paymentMethod": "cash",
+  "amountReceived": 100000
+}
+```
+
+| Field | Aturan |
+| --- | --- |
+| `idempotencyKey` | Wajib, 8–100 karakter `A-Z a-z 0-9 - _`. Buat satu key per konfirmasi bayar dan pakai ulang saat retry |
+| `items` | 1–50 item; `productId` UUID; `quantity` integer 1–100.000; produk tidak boleh ganda; hanya dua field itu |
+| `discountPercent` | Opsional, integer 0–100, default 0. Diskon = round(subtotal × persen / 100) |
+| `customerName` | Opsional, ≤60 karakter; kosong menjadi `Pelanggan` |
+| `orderType` | `dine_in` atau `takeaway` |
+| `paymentMethod` | `cash` atau `qris` (simulasi, tanpa payment gateway) |
+| `amountReceived` | Wajib untuk `cash` (integer rupiah 0–1.000.000.000.000, harus ≥ total). Tidak boleh dikirim untuk `qris`, termasuk `null`; QRIS selalu sebesar total |
+
+Subtotal maksimal Rp1.000.000.000.000. Seluruh proses berjalan dalam satu transaksi SQLite (`BEGIN IMMEDIATE`): sesi diperiksa ulang, idempotency key dicek, harga dibaca, stok dikurangi bersyarat (`stock >= qty`), lalu transaksi, item, dan snapshot toko disimpan. Jika satu langkah gagal, tidak ada stok atau transaksi yang berubah.
+
+| Status | Kode | Kapan |
+| --- | --- | --- |
+| 201 | — | Transaksi baru; `replayed: false` |
+| 200 | — | Key yang sama dengan payload sama; transaksi yang sama dikembalikan, `replayed: true`, stok tidak berubah lagi |
+| 400 | `VALIDATION_ERROR` | Body tidak valid; `fields.amountReceived` untuk uang kurang (`Uang kurang Rp4.000. Minimal Rp84.000.`) |
+| 409 | `IDEMPOTENCY_CONFLICT` | Key yang sama dengan payload berbeda |
+| 409 | `PRODUCT_UNAVAILABLE` | Produk dihapus atau bukan milik workspace sesi |
+| 409 | `INSUFFICIENT_STOCK` | Stok tidak cukup; pesan menyebut sisa stok |
+| 401 | `UNAUTHENTICATED`/`SESSION_EXPIRED` | Sesi dicabut atau kedaluwarsa saat checkout menunggu |
+
+Nomor transaksi `SDH-YYYYMMDD-NNN` berurutan per hari Asia/Jakarta per workspace. Respons 201/200:
+
+```json
+{
+  "transaction": {
+    "id": "fd185ed8-6a97-41d0-a697-99ca00053101",
+    "number": "SDH-20261015-001",
+    "createdAt": "2026-10-14T17:27:17.020Z",
+    "cashierRole": "cashier",
+    "customerName": "Raka",
+    "orderType": "dine_in",
+    "items": [
+      {
+        "lineNumber": 1,
+        "productId": "9739b8e2-…",
+        "name": "Kopi Susu Seduh",
+        "category": "Kopi",
+        "imageKey": "iced-coffee",
+        "unitPrice": 28000,
+        "quantity": 2,
+        "lineTotal": 56000
+      },
+      {
+        "lineNumber": 2,
+        "productId": "da61fdf2-…",
+        "name": "Butter Croissant",
+        "category": "Pastry",
+        "imageKey": "croissant",
+        "unitPrice": 24000,
+        "quantity": 1,
+        "lineTotal": 24000
+      }
+    ],
+    "subtotal": 80000,
+    "discountPercent": 10,
+    "discountAmount": 8000,
+    "total": 72000,
+    "paymentMethod": "cash",
+    "amountReceived": 100000,
+    "changeAmount": 28000,
+    "store": {
+      "name": "Seduh Coffee",
+      "address": "Jl. Melati No. 12, Jakarta",
+      "receiptMessage": "Terima kasih sudah singgah. Sampai seduhan berikutnya!"
+    }
+  },
+  "replayed": false
+}
+```
+
+Item dan `store` adalah snapshot saat penjualan; perubahan harga, penghapusan menu, atau perubahan pengaturan toko tidak mengubah transaksi lama. `productId` item bernilai `null` jika menu sudah dihapus. Replay membandingkan payload setelah trim/default diterapkan; urutan item juga harus tetap sama saat retry.
+
+### GET /api/transactions
+
+Query opsional: `search` (≤60, nomor atau nama pelanggan), `date` (`YYYY-MM-DD`, tanggal kalender valid, satu hari Asia/Jakarta), `limit` (1–100, default 50), `offset` (0–100.000, default 0). Urutan terbaru dulu. Tanggal seperti `2026-13-01`, `2026-01-00`, atau `2026-02-30` mendapat 400 `VALIDATION_ERROR` dengan `fields.date`.
+
+```json
+{
+  "transactions": [
+    {
+      "id": "…",
+      "number": "SDH-20261015-001",
+      "createdAt": "2026-10-14T17:27:17.020Z",
+      "customerName": "Raka",
+      "orderType": "dine_in",
+      "itemCount": 3,
+      "total": 72000,
+      "paymentMethod": "cash"
+    }
+  ],
+  "total": 32,
+  "limit": 50,
+  "offset": 0
+}
+```
+
+### GET /api/transactions/:id
+
+HTTP 200 `{ "transaction": { … } }` dengan bentuk yang sama seperti respons checkout.
+
 ## Kontrak yang direncanakan
 
 | Metode | Path | Akses | Tiket |
@@ -157,9 +282,9 @@ Pemilik. Hasil 204. Struk lama tetap utuh karena item transaksi menyimpan snapsh
 | POST | /api/products | Pemilik — aktif | POS-004 |
 | PATCH | /api/products/:id | Pemilik — aktif | POS-004 |
 | DELETE | /api/products/:id | Pemilik — aktif | POS-004 |
-| POST | /api/transactions | Kasir/pemilik | POS-005 |
-| GET | /api/transactions | Kasir/pemilik | POS-005 |
-| GET | /api/transactions/:id | Kasir/pemilik | POS-005 |
+| POST | /api/transactions | Kasir/pemilik — aktif | POS-005 |
+| GET | /api/transactions | Kasir/pemilik — aktif | POS-005 |
+| GET | /api/transactions/:id | Kasir/pemilik — aktif | POS-005 |
 | GET | /api/dashboard | Pemilik | POS-010 |
 | GET | /api/reports | Pemilik | POS-010 |
 | GET | /api/reports/export | Pemilik | POS-010 |

@@ -4,6 +4,7 @@ import { config } from './config.js';
 import { createHealthRouter } from './routes/health.js';
 import { createProductRouter } from './routes/products.js';
 import { createSessionRouter } from './routes/session.js';
+import { createTransactionRouter } from './routes/transactions.js';
 import { loadSession } from './middleware/auth.js';
 import { apiNotFound, errorHandler } from './middleware/errors.js';
 import { requestContext } from './middleware/request-context.js';
@@ -25,6 +26,7 @@ export function createApp(database) {
   app.use('/api', loadSession(database));
   app.use('/api', createSessionRouter(database));
   app.use('/api', createProductRouter(database));
+  app.use('/api', createTransactionRouter(database));
   app.use('/api', apiNotFound);
   app.use('/prototype', express.static(config.prototypeDirectory, { dotfiles: 'deny' }));
   app.use(express.static(config.webDirectory));

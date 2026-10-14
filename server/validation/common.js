@@ -1,3 +1,5 @@
+import { HttpError } from '../lib/http-error.js';
+
 export function isPlainObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -27,4 +29,29 @@ export function readText(value, minLength, maxLength) {
 export function readInteger(value, min, max) {
   const valid = Number.isSafeInteger(value) && value >= min && value <= max;
   return valid ? { value } : null;
+}
+
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+export function isUuid(value) {
+  return typeof value === 'string' && uuidPattern.test(value);
+}
+
+// Body harus objek JSON; field di luar `allowed` ditolak, bukan diabaikan.
+export function assertJsonObject(body, allowed, emptyMessage) {
+  if (!isPlainObject(body)) {
+    throw new HttpError(400, 'VALIDATION_ERROR', emptyMessage);
+  }
+  const unknown = Object.keys(body).filter((key) => !allowed.includes(key));
+  if (unknown.length > 0) {
+    const entries = unknown
+      .slice(0, 10)
+      .map((key) => [key.slice(0, 40), 'Tidak diterima.']);
+    throw new HttpError(
+      400,
+      'VALIDATION_ERROR',
+      'Ada field yang tidak diterima.',
+      Object.fromEntries(entries),
+    );
+  }
 }

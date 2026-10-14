@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { withOwnerWorkspace } from './product-access.js';
+import { withOwnerWorkspace } from './workspace-access.js';
 import {
   defaultImageByCategory,
   imageMatchesCategory,

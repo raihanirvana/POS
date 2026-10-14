@@ -77,6 +77,24 @@ curl -b b.txt -X DELETE http://127.0.0.1:3001/api/products/<id-A>      # 404
 
 Coba juga harga/stok string, pecahan, dan di luar batas; nama kosong/terlalu panjang; field `workspaceId`; foto yang tidak sesuai kategori; stok 0; serta `search` berisi `%` atau kutip. Hapus produk yang pernah terjual, lalu periksa di SQLite bahwa jumlah dan total `transaction_items` dengan nama itu tidak berubah. Restart API dan bandingkan daftar produk.
 
+## Checkout — POS-005
+
+Gunakan cookie kasir dan ID produk dari `GET /api/products`:
+
+```sh
+curl -b c.txt -X POST -H 'content-type: application/json' -d '{
+  "idempotencyKey":"prd-scenario-0001",
+  "items":[{"productId":"<kopi>","quantity":2},{"productId":"<croissant>","quantity":1}],
+  "discountPercent":10,"orderType":"dine_in","paymentMethod":"cash","amountReceived":100000
+}' http://127.0.0.1:3001/api/transactions   # 201, total 72000, kembalian 28000
+```
+
+Kirim ulang body yang sama (200, `replayed: true`, stok tetap), lalu ubah diskon dengan key yang sama (409). Coba uang kurang, qty 0/pecahan/string, field `total`/`unitPrice`, produk terhapus, dan stok kurang bersama item lain; stok dan jumlah transaksi harus tetap. Untuk race, jalankan dua proses API pada `DATABASE_PATH` yang sama, set stok 1, lalu kirim beberapa checkout paralel ke kedua port: hanya satu 201. Ubah harga dan `settings.store_name`, lalu bandingkan detail transaksi lama dan baru.
+
+Coba QRIS dengan `amountReceived: null` (400), diskon 100% (total 0), subtotal tepat Rp1 triliun (diterima), dan subtotal di atas batas (400 tanpa perubahan stok). Filter tanggal dengan bulan/hari tidak valid harus 400, tanggal kabisat valid serta tahun 0000/9999 harus 200. Pastikan nomor setelah akhiran 999 adalah 1000.
+
+Pada database sementara, pasang trigger yang menggagalkan INSERT item kedua. Checkout harus 500 dan semua stok, header transaksi, serta item pertama kembali seperti semula; hapus trigger lalu coba key yang sama (201). Uji juga sesi yang dicabut saat checkout menunggu kunci SQLite: 401, cookie dihapus, tanpa mutasi. Kegagalan buatan ini hanya untuk verifikasi rollback, bukan perubahan skema aplikasi.
+
 ## Checklist fitur untuk POS-012
 
 Belum dijalankan untuk fullstack; isi setelah tiket terkait selesai.

@@ -1,8 +1,7 @@
 import { HttpError } from '../lib/http-error.js';
 import { imagePresets, productCategories } from '../lib/product-catalog.js';
-import { isPlainObject, readInteger, readText } from './common.js';
+import { assertJsonObject, isUuid, readInteger, readText } from './common.js';
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const requiredOnCreate = ['name', 'category', 'price', 'stock'];
 
 function readOneOf(value, allowed) {
@@ -49,21 +48,7 @@ export function invalidProduct(fields) {
 
 // Field di luar daftar (id, workspaceId, seedKey, ...) ditolak, bukan diabaikan.
 function assertProductBody(body) {
-  if (!isPlainObject(body)) {
-    throw new HttpError(400, 'VALIDATION_ERROR', 'Kirim data produk dalam JSON.');
-  }
-  const unknown = Object.keys(body).filter((key) => !Object.hasOwn(fieldRules, key));
-  if (unknown.length > 0) {
-    const entries = unknown
-      .slice(0, 10)
-      .map((key) => [key.slice(0, 40), 'Tidak diterima.']);
-    throw new HttpError(
-      400,
-      'VALIDATION_ERROR',
-      'Ada field yang tidak diterima.',
-      Object.fromEntries(entries),
-    );
-  }
+  assertJsonObject(body, Object.keys(fieldRules), 'Kirim data produk dalam JSON.');
 }
 
 function readFields(body, missingFields) {
@@ -133,7 +118,7 @@ export function parseProductQuery(query) {
 
 // ID asing atau salah format diperlakukan sama: produk tidak ditemukan.
 export function parseProductId(value) {
-  if (typeof value !== 'string' || !uuidPattern.test(value)) {
+  if (!isUuid(value)) {
     throw productNotFound();
   }
   return value;
