@@ -15,7 +15,7 @@ case "${1:-}" in
     exec "$render_cli" login
     ;;
   --create)
-    exec "$render_cli" services create \
+    if "$render_cli" services create \
       --name "${RENDER_SERVICE_NAME:-seduh-pos}" \
       --type web_service \
       --runtime node \
@@ -33,7 +33,13 @@ case "${1:-}" in
       --env-var TRUST_PROXY=1 \
       --env-var DATABASE_PATH=./data/seduh.sqlite \
       --env-var VITE_DEMO_EPHEMERAL_STORAGE=true \
-      --output json --confirm
+      --output json --confirm; then
+      exit 0
+    fi
+    printf '%s\n' 'Pembuatan gagal; service mungkin sudah dibuat sebelum deploy gagal.' >&2
+    printf '%s\n' 'Periksa daftar service sebelum mengulangi --create:' >&2
+    printf '%s\n' 'render services --output json' >&2
+    exit 1
     ;;
   '')
     if [[ -z "${RENDER_SERVICE_ID:-}" ]]; then

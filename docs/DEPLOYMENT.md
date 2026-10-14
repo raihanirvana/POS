@@ -1,8 +1,27 @@
 # Deploy demo Seduh POS ke Render Free
 
 Target yang dipilih pemilik: satu Web Service **Free**, React + Express pada origin yang
-sama, SQLite sementara. Belum ada URL publik yang diverifikasi. Hosting Sites prototype
+sama, SQLite sementara. Service sudah dibuat; deploy belum berjalan karena gangguan
+Render Free. Belum ada URL publik yang diverifikasi. Hosting Sites prototype
 tetap terpisah dan `.openai/hosting.json` tidak berubah.
+
+## Service yang sudah dibuat
+
+- ID: `srv-db7vpv8n74is73d81st0`, nama `seduh-pos`, plan Free, region Singapore.
+- [Dashboard](https://dashboard.render.com/web/srv-db7vpv8n74is73d81st0).
+- Alamat yang diberikan Render: `https://seduh-pos.onrender.com` (belum demo live).
+- Login CLI selesai; workspace disetel dan Blueprint `valid: true`.
+- Build/start, Node 22.20.0, HOST, TRUST_PROXY, DATABASE_PATH, dan catatan halaman masuk
+  diperiksa pada konfigurasi service melalui API Render.
+- Pembuatan service dan percobaan deploy mengembalikan 503 `deploys is currently
+  unavailable`; daftar deploy kosong. Render sedang
+  [menjeda deploy Free](https://status.render.com/incidents/8tsd93r1wbmz).
+
+Setelah gangguan pulih, gunakan service ini; jangan jalankan `--create` lagi:
+
+```sh
+RENDER_SERVICE_ID=srv-db7vpv8n74is73d81st0 npm run deploy:render
+```
 
 ## Yang perlu disiapkan
 
@@ -40,6 +59,9 @@ service tambahan. Jika nama sudah terpakai, tentukan nama lain:
 ```sh
 RENDER_SERVICE_NAME=seduh-pos-raihan npm run deploy:render -- --create
 ```
+
+Jika `--create` gagal, periksa `render services --output json` dahulu: service bisa
+sudah dibuat walaupun deploy pertama gagal. Pakai ID yang ada untuk redeploy.
 
 Simpan ID `srv-...` dari respons. Pantau deploy di dashboard atau CLI:
 

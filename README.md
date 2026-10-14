@@ -1,6 +1,6 @@
 # Seduh POS — portfolio fullstack
 
-Demo aplikasi kasir kedai kopi untuk menunjukkan hasil jasa pembuatan web: React + Vite di frontend, Express + SQLite (`node:sqlite`) di backend. Pengunjung masuk sebagai **Kasir** atau **Pemilik** tanpa daftar, lalu mencoba transaksi lengkap di ruang data miliknya sendiri. Semua tiket POS-001 sampai POS-012 selesai; POS-013 menyiapkan Render Free, belum ada URL publik yang diverifikasi. Lihat [panduan deploy](docs/DEPLOYMENT.md), [daftar tiket](docs/tickets/README.md), [PRD](PRD.md), dan [aturan proyek](AGENTS.md).
+Demo aplikasi kasir kedai kopi untuk menunjukkan hasil jasa pembuatan web: React + Vite di frontend, Express + SQLite (`node:sqlite`) di backend. Pengunjung masuk sebagai **Kasir** atau **Pemilik** tanpa daftar, lalu mencoba transaksi lengkap di ruang data miliknya sendiri. Semua tiket POS-001 sampai POS-012 selesai; service Render Free POS-013 sudah dibuat, tetapi deploy tertunda karena gangguan Render. Belum ada URL live yang diverifikasi. Lihat [panduan deploy](docs/DEPLOYMENT.md), [daftar tiket](docs/tickets/README.md), [PRD](PRD.md), dan [aturan proyek](AGENTS.md).
 
 ## Yang bisa dicoba
 
@@ -67,7 +67,19 @@ Detail ada di [API.md](docs/API.md#keamanan-dan-batas).
 
 ## Deploy Render Free
 
-Siapkan akun Render dan hubungkan GitHub `raihanirvana/POS`. Setelah Render CLI terpasang:
+Service **seduh-pos** sudah dibuat pada Render Free Singapore dengan ID
+`srv-db7vpv8n74is73d81st0`. Login CLI sudah selesai dan Blueprint valid. Saat verifikasi,
+Render menjeda deploy Free karena [gangguan builds/deploys](https://status.render.com/incidents/8tsd93r1wbmz).
+Belum ada deploy yang berjalan. Dashboard:
+[service Seduh POS](https://dashboard.render.com/web/srv-db7vpv8n74is73d81st0).
+
+Setelah gangguan pulih, lanjutkan ke service yang sama:
+
+```sh
+RENDER_SERVICE_ID=srv-db7vpv8n74is73d81st0 npm run deploy:render
+```
+
+Untuk setup akun/service baru di mesin lain:
 
 ```sh
 npm run render:login                 # otorisasi di browser, lalu pilih workspace
@@ -77,8 +89,9 @@ npm run deploy:render -- --create    # sekali untuk membuat service Free
 Alternatif: **New → Blueprint**, pilih repo dan terapkan `render.yaml`. Pilih satu cara
 pembuatan service. Root Directory kosong: root Git sudah berisi `package.json`.
 Panduan lengkap, redeploy, batas data sementara, dan pemeriksaan URL live ada di
-[DEPLOYMENT.md](docs/DEPLOYMENT.md). Login Render di mesin pengembangan masih diperlukan;
-URL publik belum tersedia.
+[DEPLOYMENT.md](docs/DEPLOYMENT.md). Service telah mendapat alamat
+`https://seduh-pos.onrender.com`, tetapi aplikasi di
+alamat tersebut belum diverifikasi dan belum siap diklaim sebagai demo live.
 
 ## Kualitas
 
@@ -90,7 +103,8 @@ npm run check        # ESLint (maks 25 baris per fungsi, tanpa inline disable) +
 Tidak ada unit test, sesuai instruksi pemilik proyek. Verifikasi memakai lint, format, build, curl/API, dan browser; langkahnya ada di [panduan verifikasi](docs/VERIFICATION.md), dan bukti per tiket ada di `docs/tickets/`.
 
 GitHub Actions menjalankan check pada push `main` dan pull request; build Render juga
-menjalankan check sebelum start. Eksekusi CI di GitHub belum diverifikasi.
+menjalankan check sebelum start. [CI untuk commit persiapan 40c61bb](https://github.com/raihanirvana/POS/actions/runs/38645180637)
+sudah selesai sukses.
 
 ## Struktur
 

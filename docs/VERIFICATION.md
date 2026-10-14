@@ -21,9 +21,12 @@ langkah live ada di [DEPLOYMENT.md](DEPLOYMENT.md). Deployment publik belum dive
 - [x] Chrome 360/768/1280: catatan data sementara tampil tanpa scroll horizontal.
 - [x] File SQLite dihapus saat API berhenti: sesi lama 401, browser kembali ke halaman
   masuk, dan login baru membuat data contoh. Restart memakai file sama mempertahankan sesi.
-- [ ] Login/workspace Render, validasi Blueprint dengan layanan Render, dan deploy sukses.
+- [x] Login/workspace Render dan validasi Blueprint dengan layanan Render (`valid: true`).
+- [x] Service Free Singapore dibuat; build/start, health dan environment dikonfirmasi API.
+- [ ] Deploy sukses; saat ini Render menjeda deploy Free, percobaan mendapat 503.
 - [ ] Cookie, health, checkout, isolasi dan reset diuji pada URL HTTPS publik sebenarnya.
-- [ ] Workflow GitHub Actions benar-benar lolos; URL live dicatat setelah diperiksa.
+- [x] Workflow GitHub Actions commit persiapan 40c61bb selesai sukses.
+- [ ] URL live dicatat setelah diperiksa; alamat service belum diverifikasi sebagai demo.
 
 Tidak membuat unit test. Database pengembangan tidak disentuh. Tidak ada disk berbayar
 atau backup lintas restart yang dijanjikan untuk target Free.
