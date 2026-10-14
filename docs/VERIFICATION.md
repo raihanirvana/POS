@@ -95,6 +95,23 @@ Coba QRIS dengan `amountReceived: null` (400), diskon 100% (total 0), subtotal t
 
 Pada database sementara, pasang trigger yang menggagalkan INSERT item kedua. Checkout harus 500 dan semua stok, header transaksi, serta item pertama kembali seperti semula; hapus trigger lalu coba key yang sama (201). Uji juga sesi yang dicabut saat checkout menunggu kunci SQLite: 401, cookie dihapus, tanpa mutasi. Kegagalan buatan ini hanya untuk verifikasi rollback, bukan perubahan skema aplikasi.
 
+## Shell React — POS-006
+
+Setelah `npm run build`, jalankan `npm start` (atau `npm run dev`) pada database sementara lalu buka browser:
+
+1. `/kasir` tanpa sesi diarahkan ke `/masuk?lanjut=/kasir`. Masuk sebagai Kasir: menu hanya Kasir dan Transaksi. Refresh tetap masuk.
+2. Buka `/dashboard` sebagai kasir: halaman "Peran kasir tidak bisa membuka halaman ini". Tombol **Ganti ke Pemilik** memunculkan 6 menu di ruang demo yang sama.
+3. **Keluar** membuka dialog (Escape menutup). Konfirmasi kembali ke `/masuk` dengan pesan data dihapus, dan cookie hilang.
+4. `?lanjut=` berisi URL luar atau halaman yang tidak diizinkan untuk peran itu kembali ke `/kasir`.
+5. DevTools: `localStorage` dan `sessionStorage` kosong, `document.cookie` tidak memuat `seduh_session` (HttpOnly).
+6. Matikan jaringan atau blokir `/api/session`: layar error dengan **Coba lagi**. Ubah `sessions.expires_at` ke masa lalu lalu refresh: halaman masuk menampilkan "Sesi demo berakhir".
+7. Lebar 360, 768, dan 1280px tanpa scroll horizontal halaman. Tab pertama memunculkan skip link; fokus memakai outline kuning.
+8. Simulasikan DELETE sesi 500: pesan error harus terlihat di dalam dialog, retry bekerja, dan Batal/Escape tidak menghapus data. Retry dari notifikasi setelah dialog ditutup harus membuka konfirmasi lagi. Escape saat request masih berjalan tidak menutup dialog.
+9. Simulasikan respons sukses sesi berupa HTML, JSON rusak, `null`, atau bentuk sesi invalid: tampilkan pesan "Respons server tidak valid" dengan retry, bukan error teknis atau layar kosong. Error JSON dengan message/requestId non-string memakai fallback yang aman. Setelah logout, judul tab harus "Masuk demo · Seduh POS".
+10. Tunda respons ganti owner ke kasir lalu navigasikan ke Dashboard sebelum respons tiba: tujuan akhirnya `/kasir`. Melalui API client asli, 403 tidak mengeluarkan sesi UI; 401 pada request produk mengarahkan ke halaman masuk dengan notice.
+
+Respons 401 untuk `GET /api/session` saat belum masuk tampil sebagai log jaringan merah di console browser. Itu perilaku kontrak API, bukan error JavaScript.
+
 ## Checklist fitur untuk POS-012
 
 Belum dijalankan untuk fullstack; isi setelah tiket terkait selesai.

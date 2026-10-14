@@ -1,12 +1,12 @@
-export function Brand() {
+export function Brand({ compact = false }) {
   return (
-    <a className="brand" href="/" aria-label="Seduh POS, beranda">
+    <span className={compact ? 'brand brand--compact' : 'brand'}>
       <span className="brand-mark" aria-hidden="true">
         s<span>•</span>
       </span>
-      <span>
+      <span className="brand-text">
         seduh<small>Point of sale</small>
       </span>
-    </a>
+    </span>
   );
 }

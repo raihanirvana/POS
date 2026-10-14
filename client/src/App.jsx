@@ -1,21 +1,61 @@
-import { Brand } from './components/Brand.jsx';
-import { HealthStatus } from './components/HealthStatus.jsx';
-import { ProjectIntro } from './components/ProjectIntro.jsx';
-import { StackOverview } from './components/StackOverview.jsx';
+import { AppShell } from './components/AppShell.jsx';
+import { Redirect } from './components/Redirect.jsx';
+import { ErrorScreen, LoadingScreen } from './components/StatusScreen.jsx';
+import { useSession } from './hooks/useSession.js';
+import { useLocation } from './lib/router.js';
+import { findRoute, homePath, loginHref, loginPath, safeNextPath } from './lib/routes.js';
+import { ForbiddenPage } from './pages/ForbiddenPage.jsx';
+import { LoginPage } from './pages/LoginPage.jsx';
+import { NotFoundPage } from './pages/NotFoundPage.jsx';
+import { PlaceholderPage } from './pages/PlaceholderPage.jsx';
+import { SessionProvider } from './session/SessionProvider.jsx';
+
+// Pembatasan di UI hanya memudahkan navigasi; server tetap menolak dengan 401/403.
+function RouteContent({ route, role }) {
+  if (!route) {
+    return <NotFoundPage />;
+  }
+  if (!route.roles.includes(role)) {
+    return <ForbiddenPage route={route} />;
+  }
+  return <PlaceholderPage route={route} />;
+}
+
+function SignedInRoutes({ pathname, session }) {
+  if (pathname === '/') {
+    return <Redirect to={homePath} />;
+  }
+  const route = findRoute(pathname);
+  return (
+    <AppShell route={route} pathname={pathname}>
+      <RouteContent route={route} role={session.role} />
+    </AppShell>
+  );
+}
+
+function AppRoutes() {
+  const { pathname, searchParams } = useLocation();
+  const state = useSession();
+  if (state.status === 'loading') {
+    return <LoadingScreen />;
+  }
+  if (state.status === 'error') {
+    return <ErrorScreen error={state.error} onRetry={state.reload} />;
+  }
+  if (pathname === loginPath) {
+    const next = safeNextPath(searchParams.get('lanjut'), state.session?.role);
+    return state.session ? <Redirect to={next} /> : <LoginPage />;
+  }
+  if (!state.session) {
+    return <Redirect to={loginHref(pathname)} />;
+  }
+  return <SignedInRoutes pathname={pathname} session={state.session} />;
+}
 
 export function App() {
   return (
-    <div className="foundation-page">
-      <header className="site-header">
-        <Brand />
-        <span className="demo-badge">Pengembangan demo</span>
-      </header>
-      <main>
-        <ProjectIntro />
-        <HealthStatus />
-        <StackOverview />
-      </main>
-      <footer>Fitur kasir fullstack akan dihubungkan pada tiket berikutnya.</footer>
-    </div>
+    <SessionProvider>
+      <AppRoutes />
+    </SessionProvider>
   );
 }

@@ -1,6 +1,6 @@
 # Seduh POS — portfolio fullstack
 
-Pengembangan React + Vite, Express, dan SQLite dilakukan per tiket. **POS-001 sampai POS-005 sudah selesai**: fondasi proyek; skema database, migrasi, dan seed; sesi demo pemilik/kasir dengan ruang data per pengunjung; API produk dan stok; serta API checkout dan transaksi atomik; fitur POS fullstack dihubungkan pada tiket berikutnya. Lihat [daftar tiket](docs/tickets/README.md) dan [aturan proyek](AGENTS.md).
+Pengembangan React + Vite, Express, dan SQLite dilakukan per tiket. **POS-001 sampai POS-006 sudah selesai**: fondasi proyek; skema database, migrasi, dan seed; sesi demo pemilik/kasir dengan ruang data per pengunjung; API produk dan stok; API checkout dan transaksi atomik; serta shell React dengan halaman masuk demo. Halaman fitur (kasir, produk, transaksi, dashboard, laporan, pengaturan) masih ditandai "Belum tersedia" sampai tiketnya selesai. Lihat [daftar tiket](docs/tickets/README.md) dan [aturan proyek](AGENTS.md).
 
 ## Menjalankan fullstack
 
@@ -13,7 +13,7 @@ npm install
 npm run dev
 ```
 
-Buka http://localhost:5173. API berjalan di http://127.0.0.1:3001; frontend meneruskan `/api` melalui proxy Vite. Halaman fondasi menampilkan koneksi database yang benar-benar diperiksa backend. Demo desain sebelumnya ada di http://localhost:5173/prototype/index.html.
+Buka http://localhost:5173. API berjalan di http://127.0.0.1:3001; frontend meneruskan `/api` melalui proxy Vite. Tanpa sesi, aplikasi membuka `/masuk` untuk memilih peran demo **Kasir** atau **Pemilik**. Setelah masuk, menu mengikuti peran, refresh tetap masuk, dan tombol di bagian atas dipakai untuk ganti peran atau keluar. Demo desain sebelumnya ada di http://localhost:5173/prototype/index.html.
 
 Jika port frontend 5173 sudah digunakan proyek lain, atur `WEB_PORT=5174` pada `.env` atau jalankan `WEB_PORT=5174 npm run dev`. Port API dapat diubah lewat `PORT`. Server tidak mengambil alih proses lain.
 
@@ -42,9 +42,11 @@ Tidak ada unit test. Verifikasi memakai lint, format, build, curl/API, dan brows
 
 ```text
 client/
-  src/components/    komponen React kecil
-  src/hooks/         logika React yang bisa dipakai ulang
-  src/lib/           API client
+  src/components/    shell, navigasi, dialog, dan komponen kecil lain
+  src/pages/         halaman masuk, placeholder fitur, 403, dan 404
+  src/hooks/         state sesi dan aksi akun
+  src/session/       context sesi
+  src/lib/           API client, router History API, daftar route, format, ikon
   dist/              hasil build (diabaikan Git)
 server/
   database/          koneksi, migrasi SQL, transaksi, dan seed

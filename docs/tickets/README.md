@@ -11,7 +11,7 @@ Kerjakan **satu tiket per tahap**. Setiap tiket mempunyai dependensi, kriteria p
 | [POS-003](POS-003.md) | Sesi demo dan hak akses | POS-002 | Selesai |
 | [POS-004](POS-004.md) | API produk dan stok | POS-003 | Selesai |
 | [POS-005](POS-005.md) | API checkout dan transaksi atomik | POS-004 | Selesai |
-| [POS-006](POS-006.md) | Shell React dan masuk demo | POS-003 | Belum dimulai |
+| [POS-006](POS-006.md) | Shell React dan masuk demo | POS-003 | Selesai |
 | [POS-007](POS-007.md) | Halaman produk React | POS-004, POS-006 | Belum dimulai |
 | [POS-008](POS-008.md) | Kasir React dan pembayaran | POS-005, POS-006 | Belum dimulai |
 | [POS-009](POS-009.md) | Struk dan riwayat transaksi | POS-008 | Belum dimulai |
