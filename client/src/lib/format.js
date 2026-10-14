@@ -33,3 +33,19 @@ const rupiahFormat = new Intl.NumberFormat('id-ID', {
 export function formatRupiah(value) {
   return rupiahFormat.format(value);
 }
+
+const dateTimeFormat = new Intl.DateTimeFormat('id-ID', {
+  timeZone,
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+export function formatDateTime(value) {
+  return `${dateTimeFormat.format(new Date(value))} WIB`;
+}
+
+export const orderTypeLabels = { dine_in: 'Makan di tempat', takeaway: 'Bawa pulang' };
+export const paymentMethodLabels = { cash: 'Tunai', qris: 'QRIS (simulasi)' };

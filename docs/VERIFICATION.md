@@ -128,6 +128,21 @@ Masuk sebagai Pemilik lalu buka `/produk`:
 10. Simulasikan respons daftar dengan tag objek, preset null, kategori/label salah tipe, stok negatif, atau katalog kosong: pesan error dengan retry, tombol tambah tidak aktif, dan tidak ada halaman kosong. Setelah GET gagal, `aria-busy` harus false.
 11. Coba 60 emoji (diterima), 61 emoji serta karakter kontrol/surrogate invalid (ditolak tanpa request), stok/harga pecahan atau melewati batas, dan harga dengan nol di depan (pratinjau sesuai nominal). Refresh dan restart API mempertahankan perubahan.
 
+## Kasir — POS-008
+
+Masuk sebagai Kasir di `/kasir`:
+
+1. Tambah 2 Kopi Susu Seduh dan 1 Butter Croissant, nama Raka, diskon 10%: pratinjau Rp80.000 − Rp8.000 = Rp72.000. Bayar Rp70.000: "Uang kurang Rp 2.000" dan konfirmasi nonaktif. Bayar Rp100.000: kembalian Rp28.000. Konfirmasi membuka struk; stok kartu menjadi 33 dan 17, dan pesanan kosong.
+2. Klik ganda tombol konfirmasi: DevTools Network hanya menunjukkan satu POST.
+3. DevTools → Network → Offline tepat setelah menekan konfirmasi (atau blokir respons): dialog "Pembayaran belum pasti tersimpan", pesanan terkunci. Kembali online lalu **Kirim ulang pembayaran**: body memakai `idempotencyKey` yang sama, dan transaksi hanya tercatat sekali.
+4. Ubah stok/harga produk di SQLite atau lewat akun pemilik setelah item masuk pesanan: stok kurang → "Stok berubah" dan jumlah disesuaikan tanpa mengosongkan pesanan; harga berubah → struk memberi tahu total final berbeda dari pratinjau.
+5. QRIS: hanya teks simulasi, tanpa gambar atau kode QR.
+6. Lebar 360px: tombol "Lihat pesanan" di bawah membuka dialog pesanan (Escape menutup); bayar dari dialog itu lalu struk. Lebar 768px dan 1280px: panel pesanan di samping.
+7. Teruskan request ke server lalu ganti respons menjadi 408: pembayaran harus tetap terkunci sebagai hasil tidak pasti. Retry harus memakai key/body sama, menghasilkan satu transaksi dan sekali pengurangan stok. Lakukan juga untuk respons struk rusak (alamat/pesan toko objek, tanggal salah tipe, atau total/item tidak konsisten).
+8. Tunda respons checkout setelah server menyimpan, gunakan Back/pindah halaman, lalu kembali ke Kasir: struk transaksi itu masih tersedia. Pada retry setelah harga berubah, catatan struk membandingkan total final dengan pratinjau awal, bukan harga menu terbaru.
+9. Hapus/habiskan produk terakhir sebelum bayar: setelah 409 dan penyesuaian pesanan, konfirmasi nonaktif dan ada petunjuk memilih menu lagi. Diskon 100% pada item yang tersedia tetap bisa dibayar Rp0; respons hilang lalu buka ulang memulihkan nominal 0.
+10. Ubah harga agar uang pas awal menjadi kurang: setelah 400, isi nominal lebih tinggi dan pastikan pesan kekurangan lama hilang. Nominal lebih dari Rp1 triliun nonaktif sebelum request; pesan field non-string tidak membuat halaman kosong dan detail field yang valid terlihat.
+
 ## Checklist fitur untuk POS-012
 
 Belum dijalankan untuk fullstack; isi setelah tiket terkait selesai.

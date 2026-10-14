@@ -1,9 +1,11 @@
+import { CartProvider } from './cart/CartProvider.jsx';
 import { AppShell } from './components/AppShell.jsx';
 import { Redirect } from './components/Redirect.jsx';
 import { ErrorScreen, LoadingScreen } from './components/StatusScreen.jsx';
 import { useSession } from './hooks/useSession.js';
 import { useLocation } from './lib/router.js';
 import { findRoute, homePath, loginHref, loginPath, safeNextPath } from './lib/routes.js';
+import { CashierPage } from './pages/CashierPage.jsx';
 import { ForbiddenPage } from './pages/ForbiddenPage.jsx';
 import { LoginPage } from './pages/LoginPage.jsx';
 import { NotFoundPage } from './pages/NotFoundPage.jsx';
@@ -12,7 +14,7 @@ import { ProductsPage } from './pages/ProductsPage.jsx';
 import { SessionProvider } from './session/SessionProvider.jsx';
 
 // Halaman yang sudah dihubungkan ke API; route lain masih placeholder.
-const livePages = { '/produk': ProductsPage };
+const livePages = { '/kasir': CashierPage, '/produk': ProductsPage };
 
 // Pembatasan di UI hanya memudahkan navigasi; server tetap menolak dengan 401/403.
 function RouteContent({ route, role }) {
@@ -32,9 +34,11 @@ function SignedInRoutes({ pathname, session }) {
   }
   const route = findRoute(pathname);
   return (
-    <AppShell route={route} pathname={pathname}>
-      <RouteContent route={route} role={session.role} />
-    </AppShell>
+    <CartProvider>
+      <AppShell route={route} pathname={pathname}>
+        <RouteContent route={route} role={session.role} />
+      </AppShell>
+    </CartProvider>
   );
 }
 
