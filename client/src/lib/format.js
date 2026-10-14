@@ -49,3 +49,15 @@ export function formatDateTime(value) {
 
 export const orderTypeLabels = { dine_in: 'Makan di tempat', takeaway: 'Bawa pulang' };
 export const paymentMethodLabels = { cash: 'Tunai', qris: 'QRIS (simulasi)' };
+
+const jakartaDateFormat = new Intl.DateTimeFormat('en-CA', {
+  timeZone,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+// Tanggal YYYY-MM-DD menurut Asia/Jakarta, sama dengan filter tanggal API.
+export function jakartaDateKey(date = new Date()) {
+  return jakartaDateFormat.format(date);
+}

@@ -143,6 +143,19 @@ Masuk sebagai Kasir di `/kasir`:
 9. Hapus/habiskan produk terakhir sebelum bayar: setelah 409 dan penyesuaian pesanan, konfirmasi nonaktif dan ada petunjuk memilih menu lagi. Diskon 100% pada item yang tersedia tetap bisa dibayar Rp0; respons hilang lalu buka ulang memulihkan nominal 0.
 10. Ubah harga agar uang pas awal menjadi kurang: setelah 400, isi nominal lebih tinggi dan pastikan pesan kekurangan lama hilang. Nominal lebih dari Rp1 triliun nonaktif sebelum request; pesan field non-string tidak membuat halaman kosong dan detail field yang valid terlihat.
 
+## Struk dan riwayat — POS-009
+
+1. Buat satu penjualan di `/kasir`. Struk sukses punya tombol **Cetak struk**.
+2. Buka `/transaksi`: total sesuai `GET /api/transactions`, 20 baris per halaman, **Berikutnya** menampilkan sisa transaksi. Cari nama pelanggan atau nomor transaksi; filter **Hari ini** dan tanggal lain (hari Asia/Jakarta).
+3. Ubah nama/harga produk dan identitas toko (lewat Produk, atau SQLite sebelum POS-011), lalu **Lihat struk** transaksi lama: nama, harga, dan toko tetap seperti saat penjualan.
+4. **Cetak struk** atau Ctrl+P saat isi struk siap: print preview hanya berisi struk (tanpa sidebar, tombol, atau catatan). Ctrl+P di halaman lain, atau ketika detail masih memuat/error, tetap mencetak halaman biasa.
+5. Escape menutup dialog struk dan fokus kembali ke tombol **Lihat struk**.
+6. Workspace lain: `GET /api/transactions/<id>` → 404 dan daftar tidak memuat ID transaksi asal. Nomor transaksi bisa sama antar workspace; hasil pencarian hanya boleh berisi transaksi workspace sesi sendiri.
+7. Lebar 360px: baris riwayat menjadi kartu tanpa scroll horizontal; dialog struk muat.
+8. Ketik kata kunci dan klik Berikutnya sebelum debounce selesai: hasil kembali ke halaman pertama. Kurangi data pada database sementara ketika request halaman berikutnya gagal, lalu Coba lagi: offset di luar rentang otomatis dikoreksi. Respons limit/offset invalid menampilkan error dan retry.
+9. Coba nama pelanggan dan menu 60 karakter tanpa spasi pada 360/768/1280px: tabel serta dialog tidak melebar, dan hasil PDF tetap memuat seluruh teks. Cetak 50 item: setiap nama, total, dan footer ada pada PDF beberapa halaman; header UI/tombol tidak tercetak.
+10. Tunda detail struk atau blokir request-nya, lalu emulasikan print: halaman riwayat tetap terlihat, portal loading/error tersembunyi, dan hasil cetak tidak kosong. Tombol Cetak nonaktif sampai struk siap.
+
 ## Checklist fitur untuk POS-012
 
 Belum dijalankan untuk fullstack; isi setelah tiket terkait selesai.

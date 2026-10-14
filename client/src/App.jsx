@@ -11,10 +11,15 @@ import { LoginPage } from './pages/LoginPage.jsx';
 import { NotFoundPage } from './pages/NotFoundPage.jsx';
 import { PlaceholderPage } from './pages/PlaceholderPage.jsx';
 import { ProductsPage } from './pages/ProductsPage.jsx';
+import { TransactionsPage } from './pages/TransactionsPage.jsx';
 import { SessionProvider } from './session/SessionProvider.jsx';
 
 // Halaman yang sudah dihubungkan ke API; route lain masih placeholder.
-const livePages = { '/kasir': CashierPage, '/produk': ProductsPage };
+const livePages = {
+  '/kasir': CashierPage,
+  '/produk': ProductsPage,
+  '/transaksi': TransactionsPage,
+};
 
 // Pembatasan di UI hanya memudahkan navigasi; server tetap menolak dengan 401/403.
 function RouteContent({ route, role }) {

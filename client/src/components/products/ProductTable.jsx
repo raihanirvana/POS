@@ -30,7 +30,7 @@ function TableHead() {
 function ProductRows({ products, onEdit, onDelete }) {
   return (
     <div className="table-wrap">
-      <table className="product-table">
+      <table className="card-table">
         <TableHead />
         <tbody>
           {products.map((product) => (

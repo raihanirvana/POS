@@ -1544,6 +1544,7 @@ th.numeric {
   border: 1px solid var(--line);
   border-radius: 12px;
   font-size: 12px;
+  overflow-wrap: anywhere;
 }
 
 .receipt-top {
@@ -1590,7 +1591,16 @@ th.numeric {
 }
 
 .receipt-items strong {
+  flex-shrink: 0;
   white-space: nowrap;
+}
+
+.receipt-items li > div {
+  min-width: 0;
+}
+
+.receipt .total-line > span {
+  flex-shrink: 0;
 }
 
 .receipt-footer {
@@ -1608,6 +1618,70 @@ th.numeric {
   background: #fff4da;
   font-size: 11px;
   text-align: center;
+}
+
+/* Riwayat transaksi */
+.history-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.date-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-filter label {
+  flex-basis: 100%;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.date-filter .input {
+  width: auto;
+  min-width: 160px;
+}
+
+.tx-number {
+  display: block;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.transaction-table td[data-label='Pelanggan'] {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.tx-time {
+  display: block;
+  color: var(--stone);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+  color: var(--stone);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel[aria-busy='true'] .table-wrap {
+  opacity: 0.6;
+}
+
+.receipt-dialog .dialog-actions {
+  flex-wrap: wrap;
 }
 
 /* Tablet besar */
@@ -1849,7 +1923,7 @@ th.numeric {
   }
 
   /* Tabel produk menjadi kartu agar harga, stok, dan aksi terlihat tanpa geser. */
-  .product-table thead {
+  .card-table thead {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -1857,7 +1931,7 @@ th.numeric {
     clip: rect(0 0 0 0);
   }
 
-  .product-table tr {
+  .card-table tr {
     display: grid;
     grid-template-columns: auto auto 1fr;
     align-items: center;
@@ -1866,16 +1940,16 @@ th.numeric {
     border-bottom: 1px solid var(--line);
   }
 
-  .product-table td {
+  .card-table td {
     padding: 0;
     border: 0;
   }
 
-  .product-table td:first-child {
+  .card-table td:first-child {
     grid-column: 1 / -1;
   }
 
-  .product-table td[data-label]::before {
+  .card-table td[data-label]::before {
     content: attr(data-label);
     display: block;
     color: var(--stone);
@@ -1883,17 +1957,24 @@ th.numeric {
     font-weight: 500;
   }
 
-  .product-table .numeric {
+  .card-table .numeric {
     text-align: left;
   }
 
-  .product-table .actions-cell {
+  .card-table .actions-cell {
     grid-column: 1 / -1;
     justify-self: end;
   }
 
-  .product-table td[data-label] {
+  .card-table td[data-label] {
     white-space: nowrap;
+  }
+
+  .transaction-table td[data-label='Pelanggan'],
+  .transaction-table td.numeric {
+    grid-column: 1 / -1;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .edit-label {
@@ -1967,5 +2048,61 @@ th.numeric {
     scroll-behavior: auto !important;
     transition: none !important;
     animation: none !important;
+  }
+}
+
+/* Cetak: bila struk terbuka, hanya portal struk yang dicetak; tombol/catatan disembunyikan. */
+@media print {
+  @page {
+    margin: 10mm;
+  }
+
+  body:has(> .receipt-portal .receipt) {
+    min-width: 0;
+    background: #fff;
+  }
+
+  body:has(> .receipt-portal .receipt) > :not(.receipt-portal) {
+    display: none !important;
+  }
+
+  .receipt-portal:not(:has(.receipt)) {
+    display: none;
+  }
+
+  .receipt-portal .no-print {
+    display: none !important;
+  }
+
+  .receipt-portal dialog {
+    position: static;
+    width: auto;
+    max-width: 80mm;
+    max-height: none;
+    margin: 0 auto;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .receipt-portal dialog::backdrop {
+    display: none;
+  }
+
+  .receipt-portal .brand-mark {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .receipt-portal .receipt {
+    margin: 0;
+    border: 0;
+    color: #000;
+  }
+
+  .receipt-portal .receipt-items li,
+  .receipt-portal .order-totals {
+    break-inside: avoid;
   }
 }

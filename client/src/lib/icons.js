@@ -23,4 +23,5 @@ export const iconPaths = {
   edit: 'm4 16 12-12 4 4-12 12-5 1 1-5 M14 6l4 4',
   trash: 'M3 6h18 M9 6V3h6v3 M6 6l1 15h10l1-15 M10 10v7 M14 10v7',
   close: 'M5 5l14 14 M19 5 5 19',
+  print: 'M6 9V3h12v6 M6 17H3V9h18v8h-3 M6 14h12v7H6z M17 11h1',
 };

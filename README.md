@@ -1,6 +1,6 @@
 # Seduh POS — portfolio fullstack
 
-Pengembangan React + Vite, Express, dan SQLite dilakukan per tiket. **POS-001 sampai POS-008 sudah selesai**: fondasi proyek; skema database, migrasi, dan seed; sesi demo pemilik/kasir dengan ruang data per pengunjung; API produk dan stok; API checkout dan transaksi atomik; shell React dengan halaman masuk demo; halaman Produk untuk pemilik (daftar, cari, filter, tambah, edit, hapus); serta halaman Kasir dengan pesanan, diskon, pembayaran tunai/QRIS simulasi, dan struk. Halaman Transaksi, Dashboard, Laporan, dan Pengaturan masih ditandai "Belum tersedia" sampai tiketnya selesai. Lihat [daftar tiket](docs/tickets/README.md) dan [aturan proyek](AGENTS.md).
+Pengembangan React + Vite, Express, dan SQLite dilakukan per tiket. **POS-001 sampai POS-009 sudah selesai**: fondasi proyek; skema database, migrasi, dan seed; sesi demo pemilik/kasir dengan ruang data per pengunjung; API produk dan stok; API checkout dan transaksi atomik; shell React dengan halaman masuk demo; halaman Produk untuk pemilik (daftar, cari, filter, tambah, edit, hapus); halaman Kasir dengan pesanan, diskon, pembayaran tunai/QRIS simulasi, dan struk; serta halaman Transaksi dengan riwayat, pencarian, filter tanggal, paginasi, buka ulang dan cetak struk. Halaman Dashboard, Laporan, dan Pengaturan masih ditandai "Belum tersedia" sampai tiketnya selesai. Lihat [daftar tiket](docs/tickets/README.md) dan [aturan proyek](AGENTS.md).
 
 ## Menjalankan fullstack
 
@@ -46,7 +46,8 @@ client/
   src/pages/         halaman masuk, Produk, Kasir, placeholder fitur, 403, dan 404
   src/components/products/  tabel, form, dan dialog produk
   src/components/cashier/   menu, panel pesanan, dan dialog pembayaran
-  src/components/receipt/   struk dari snapshot transaksi
+  src/components/receipt/   struk dari snapshot transaksi, dialog dan cetak
+  src/components/transactions/  riwayat, filter, dan paginasi
   src/cart/          context pesanan, pembayaran tertunda, dan struk (di memori browser)
   src/assets/menu/   foto menu preset lokal (sumber di SOURCES.md)
   src/hooks/         state sesi, aksi akun, daftar produk, dan form

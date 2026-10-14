@@ -49,7 +49,7 @@ function hasValidTotals(value) {
   );
 }
 
-function isTransaction(value) {
+export function isTransaction(value) {
   return (
     typeof value?.id === 'string' &&
     typeof value.number === 'string' &&
@@ -73,4 +73,60 @@ export async function createTransaction(body) {
     throw invalidResponse();
   }
   return payload;
+}
+
+function isSummary(value) {
+  return (
+    typeof value?.id === 'string' &&
+    typeof value.number === 'string' &&
+    typeof value.createdAt === 'string' &&
+    Number.isFinite(Date.parse(value.createdAt)) &&
+    typeof value.customerName === 'string' &&
+    ['dine_in', 'takeaway'].includes(value.orderType) &&
+    ['cash', 'qris'].includes(value.paymentMethod) &&
+    Number.isSafeInteger(value.itemCount) &&
+    value.itemCount > 0 &&
+    isMoney(value.total)
+  );
+}
+
+function transactionListResponse(payload) {
+  const valid =
+    Array.isArray(payload?.transactions) &&
+    payload.transactions.every(isSummary) &&
+    Number.isSafeInteger(payload.total) &&
+    payload.total >= payload.transactions.length &&
+    Number.isSafeInteger(payload.limit) &&
+    payload.limit >= 1 &&
+    payload.limit <= 100 &&
+    payload.transactions.length <= payload.limit &&
+    Number.isSafeInteger(payload.offset) &&
+    payload.offset >= 0 &&
+    payload.offset <= 100000 &&
+    (payload.transactions.length === 0 ||
+      payload.offset + payload.transactions.length <= payload.total);
+  if (!valid) {
+    throw invalidResponse();
+  }
+  return payload;
+}
+
+export async function listTransactions({ search, date, limit, offset }, signal) {
+  const query = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+  if (search) {
+    query.set('search', search);
+  }
+  if (date) {
+    query.set('date', date);
+  }
+  const payload = await apiRequest(`/transactions?${query}`, { signal });
+  return transactionListResponse(payload);
+}
+
+export async function getTransaction(id, signal) {
+  const payload = await apiRequest(`/transactions/${encodeURIComponent(id)}`, { signal });
+  if (!isTransaction(payload?.transaction)) {
+    throw invalidResponse();
+  }
+  return payload.transaction;
 }
