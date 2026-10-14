@@ -1,6 +1,6 @@
 # API Seduh POS
 
-API JSON satu origin dengan React. Prefix `/api`. Saat ini **healthcheck dan sesi demo** sudah diimplementasikan; endpoint lain di tabel rencana merupakan kontrak untuk tiket berikutnya. Semua respons `/api` memakai `Cache-Control: no-store`.
+API JSON satu origin dengan React. Prefix `/api`. Saat ini **healthcheck, sesi demo, dan produk** sudah diimplementasikan; endpoint lain di tabel rencana merupakan kontrak untuk tiket berikutnya. Semua respons `/api` memakai `Cache-Control: no-store`.
 
 ## Endpoint aktif — POS-001
 
@@ -83,6 +83,69 @@ Keluar dari demo dan menghapus cookie. Jika sesi masih aktif saat transaksi logo
 
 Untuk 401 dengan cookie yang tidak valid atau kedaluwarsa, respons juga menghapus cookie. Umur ruang demo diatur `DEMO_TTL_MINUTES` (default 720 menit = 12 jam).
 
+## Error validasi
+
+Error 400 `VALIDATION_ERROR` dapat membawa `fields` berisi pesan per field untuk form:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Periksa kembali data produk.",
+    "fields": { "price": "Harga harus bilangan bulat Rp1.000 sampai Rp10.000.000." },
+    "requestId": "…"
+  }
+}
+```
+
+## Produk — POS-004
+
+Semua endpoint produk memerlukan sesi (tanpa sesi 401). Data selalu dibatasi workspace sesi; produk milik workspace lain atau ID yang salah format mendapat 404 `NOT_FOUND`, sehingga keberadaannya tidak bocor. Kasir yang memanggil POST/PATCH/DELETE mendapat 403 `FORBIDDEN`. Setiap mutasi memeriksa ulang sesi, masa berlaku, dan peran setelah mendapat kunci transaksi SQLite. Token yang sudah dicabut ketika request menunggu mendapat 401 tanpa mengubah produk; cookie lama ikut dihapus.
+
+Bentuk produk:
+
+```json
+{
+  "id": "2423b98b-f641-4760-8256-83d3072b1caf",
+  "name": "Kopi Susu Seduh",
+  "category": "Kopi",
+  "price": 28000,
+  "stock": 35,
+  "imageKey": "iced-coffee",
+  "description": "Espresso, susu & gula aren",
+  "tag": "Favorit",
+  "createdAt": "2026-10-14T17:04:58.800Z",
+  "updatedAt": "2026-10-14T17:04:58.800Z"
+}
+```
+
+### GET /api/products
+
+Kasir dan pemilik. Query opsional `category` (`Kopi`, `Non-kopi`, `Pastry`) dan `search` (maksimal 60 karakter; mencari di nama dan deskripsi, tidak peka huruf besar/kecil untuk huruf ASCII; `%` dan `_` diperlakukan sebagai teks). Kategori lain, kategori ganda, atau kata kunci terlalu panjang mendapat 400. Parameter lain seperti `workspaceId` diabaikan. Urutan mengikuti waktu dibuat.
+
+```json
+{
+  "products": [ … ],
+  "filters": { "category": "Kopi", "search": "latte" },
+  "catalog": {
+    "categories": ["Kopi", "Non-kopi", "Pastry"],
+    "imagePresets": [{ "key": "latte", "label": "Latte", "category": "Kopi" }, …]
+  }
+}
+```
+
+### POST /api/products
+
+Pemilik. Wajib: `name` (1–60 karakter setelah trim), `category`, `price` (integer 1.000–10.000.000), `stock` (integer 0–100.000). Opsional: `description` (≤100, default kosong), `tag` (≤30 atau `null`), `imageKey` (preset yang **sesuai kategori**; default `latte`/`matcha`/`croissant`). Angka harus berupa number JSON, bukan string. Karakter kontrol C0/C1/DEL dan Unicode dengan surrogate yang tidak berpasangan ditolak; emoji valid dihitung per karakter Unicode. Field lain (`id`, `workspaceId`, `seedKey`, …) ditolak 400. Hasil: 201 `{ "product": { … } }`.
+
+### PATCH /api/products/:id
+
+Pemilik. Field sama seperti POST, semuanya opsional, minimal satu. Body kosong mendapat 400. Jika `category` berubah tanpa `imageKey`, foto lama dipertahankan bila sesuai kategori baru; jika tidak, kembali ke foto default kategori. Hasil: 200 `{ "product": { … } }`. Stok yang dikirim adalah nilai baru, bukan selisih.
+
+### DELETE /api/products/:id
+
+Pemilik. Hasil 204. Struk lama tetap utuh karena item transaksi menyimpan snapshot nama, kategori, foto, dan harga; referensi `product_id` pada item menjadi `NULL`.
+
 ## Kontrak yang direncanakan
 
 | Metode | Path | Akses | Tiket |
@@ -90,10 +153,10 @@ Untuk 401 dengan cookie yang tidak valid atau kedaluwarsa, respons juga menghapu
 | POST | /api/demo/sessions | Publik — aktif | POS-003 |
 | GET | /api/session | Sesi demo — aktif | POS-003 |
 | DELETE | /api/session | Publik, idempoten — aktif | POS-003 |
-| GET | /api/products | Kasir/pemilik | POS-004 |
-| POST | /api/products | Pemilik | POS-004 |
-| PATCH | /api/products/:id | Pemilik | POS-004 |
-| DELETE | /api/products/:id | Pemilik | POS-004 |
+| GET | /api/products | Kasir/pemilik — aktif | POS-004 |
+| POST | /api/products | Pemilik — aktif | POS-004 |
+| PATCH | /api/products/:id | Pemilik — aktif | POS-004 |
+| DELETE | /api/products/:id | Pemilik — aktif | POS-004 |
 | POST | /api/transactions | Kasir/pemilik | POS-005 |
 | GET | /api/transactions | Kasir/pemilik | POS-005 |
 | GET | /api/transactions/:id | Kasir/pemilik | POS-005 |

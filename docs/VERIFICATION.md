@@ -58,7 +58,24 @@ curl -b b.txt http://127.0.0.1:3001/api/session                  # cashier
 curl -b a.txt -c a.txt -X DELETE http://127.0.0.1:3001/api/session  # 204
 ```
 
-Periksa di SQLite bahwa kedua jar memakai workspace berbeda dan `token_hash` tidak sama dengan isi cookie. Coba body dengan `workspaceId`, peran asing, cookie lama setelah logout/ganti peran, dan sesi kedaluwarsa (`DEMO_TTL_MINUTES=1`). Sebelum POS-004 belum ada endpoint pemilik, jadi uji 403 memakai harness sementara di luar repo yang memasang `requireSession` + `requireRole('owner')` asli. Setelah POS-004, ulangi dengan `POST /api/products` memakai sesi kasir.
+Periksa di SQLite bahwa kedua jar memakai workspace berbeda dan `token_hash` tidak sama dengan isi cookie. Coba body dengan `workspaceId`, peran asing, cookie lama setelah logout/ganti peran, dan sesi kedaluwarsa (`DEMO_TTL_MINUTES=1`). Sebelum POS-004 belum ada endpoint pemilik, jadi uji 403 memakai harness sementara di luar repo yang memasang `requireSession` + `requireRole('owner')` asli. Sejak POS-004, 403 diuji dengan `POST/PATCH/DELETE /api/products` memakai sesi kasir.
+
+## Produk — POS-004
+
+Masuk sebagai pemilik A, pemilik B, dan kasir C (tiga cookie jar), lalu:
+
+```sh
+curl -b a.txt 'http://127.0.0.1:3001/api/products?category=Kopi&search=latte'
+curl -b a.txt -X POST -H 'content-type: application/json' \
+  -d '{"name":"Vanilla Latte","category":"Kopi","price":32000,"stock":12}' \
+  http://127.0.0.1:3001/api/products                                   # 201, imageKey latte
+curl -b a.txt -X PATCH -H 'content-type: application/json' \
+  -d '{"category":"Non-kopi"}' http://127.0.0.1:3001/api/products/<id> # imageKey matcha
+curl -b c.txt -X DELETE http://127.0.0.1:3001/api/products/<id>        # 403
+curl -b b.txt -X DELETE http://127.0.0.1:3001/api/products/<id-A>      # 404
+```
+
+Coba juga harga/stok string, pecahan, dan di luar batas; nama kosong/terlalu panjang; field `workspaceId`; foto yang tidak sesuai kategori; stok 0; serta `search` berisi `%` atau kutip. Hapus produk yang pernah terjual, lalu periksa di SQLite bahwa jumlah dan total `transaction_items` dengan nama itu tidak berubah. Restart API dan bandingkan daftar produk.
 
 ## Checklist fitur untuk POS-012
 

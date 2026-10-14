@@ -1,9 +1,6 @@
 import { HttpError } from '../lib/http-error.js';
 import { demoRoles } from '../services/demo-session-service.js';
-
-function isPlainObject(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+import { isPlainObject } from './common.js';
 
 // Hanya peran yang diterima. Workspace selalu ditentukan server, tidak dari payload.
 export function parseDemoSessionBody(body) {

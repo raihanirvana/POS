@@ -1,4 +1,5 @@
 import { HttpError } from '../lib/http-error.js';
+import { clearSessionCookie } from '../lib/session-cookie.js';
 
 const bodyErrors = {
   'entity.parse.failed': {
@@ -31,7 +32,8 @@ export function apiNotFound(_request, response) {
 
 function describeError(error) {
   if (error instanceof HttpError) {
-    return { status: error.status, code: error.code, message: error.message };
+    const { status, code, message, fields } = error;
+    return { status, code, message, fields };
   }
   return (
     bodyErrors[error.type] ?? {
@@ -43,7 +45,10 @@ function describeError(error) {
 }
 
 export function errorHandler(error, request, response, _next) {
-  const { status, code, message } = describeError(error);
+  const { status, code, message, fields } = describeError(error);
+  if (status === 401 && request.auth) {
+    clearSessionCookie(request, response);
+  }
   if (status >= 500) {
     console.error(`[${request.requestId}] ${error.message}`);
   }
@@ -51,6 +56,7 @@ export function errorHandler(error, request, response, _next) {
     error: {
       code,
       message,
+      ...(fields ? { fields } : {}),
       requestId: request.requestId,
     },
   });

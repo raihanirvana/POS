@@ -3,6 +3,7 @@ import { seedWorkspaceData } from '../database/seed/index.js';
 import { withTransaction } from '../database/transaction.js';
 import {
   findSessionByTokenHash,
+  findSessionById,
   insertSession,
   revokeSession,
 } from '../repositories/session-repository.js';
@@ -85,8 +86,7 @@ function toAuth(session) {
 }
 
 // Hasil { auth } untuk sesi aktif, atau { problem: 'invalid' | 'expired' }.
-export function resolveDemoSession(database, token, now) {
-  const row = token ? findSessionByTokenHash(database, hashToken(token)) : undefined;
+function resolveStoredSession(row, now) {
   if (!row || row.revoked_at) {
     return { problem: 'invalid' };
   }
@@ -104,6 +104,15 @@ export function resolveDemoSession(database, token, now) {
       workspaceExpiresAt: row.workspace_expires_at,
     }),
   };
+}
+
+export function resolveDemoSession(database, token, now) {
+  const row = token ? findSessionByTokenHash(database, hashToken(token)) : undefined;
+  return resolveStoredSession(row, now);
+}
+
+export function resolveDemoSessionById(database, sessionId, now) {
+  return resolveStoredSession(findSessionById(database, sessionId), now);
 }
 
 // Setelah keluar, ruang demo tidak dapat dijangkau lagi sehingga datanya langsung dihapus.

@@ -10,6 +10,18 @@ export function findSessionByTokenHash(database, tokenHash) {
     .get(tokenHash);
 }
 
+export function findSessionById(database, sessionId) {
+  return database
+    .prepare(
+      `SELECT session.id, session.workspace_id, session.role, session.created_at,
+         session.expires_at, session.revoked_at, workspace.expires_at AS workspace_expires_at
+       FROM sessions AS session
+       JOIN demo_workspaces AS workspace ON workspace.id = session.workspace_id
+       WHERE session.id = ?`,
+    )
+    .get(sessionId);
+}
+
 export function insertSession(database, session) {
   database
     .prepare(

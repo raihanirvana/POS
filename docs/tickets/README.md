@@ -9,7 +9,7 @@ Kerjakan **satu tiket per tahap**. Setiap tiket mempunyai dependensi, kriteria p
 | [POS-001](POS-001.md) | Fondasi proyek dan aturan kualitas | — | Selesai |
 | [POS-002](POS-002.md) | Skema database, migrasi, dan seed | POS-001 | Selesai |
 | [POS-003](POS-003.md) | Sesi demo dan hak akses | POS-002 | Selesai |
-| [POS-004](POS-004.md) | API produk dan stok | POS-003 | Belum dimulai |
+| [POS-004](POS-004.md) | API produk dan stok | POS-003 | Selesai |
 | [POS-005](POS-005.md) | API checkout dan transaksi atomik | POS-004 | Belum dimulai |
 | [POS-006](POS-006.md) | Shell React dan masuk demo | POS-003 | Belum dimulai |
 | [POS-007](POS-007.md) | Halaman produk React | POS-004, POS-006 | Belum dimulai |

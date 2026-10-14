@@ -1,6 +1,6 @@
 # Seduh POS — portfolio fullstack
 
-Pengembangan React + Vite, Express, dan SQLite dilakukan per tiket. **POS-001 sampai POS-003 sudah selesai**: fondasi proyek; skema database, migrasi, dan seed; serta sesi demo pemilik/kasir dengan ruang data per pengunjung; fitur POS fullstack dihubungkan pada tiket berikutnya. Lihat [daftar tiket](docs/tickets/README.md) dan [aturan proyek](AGENTS.md).
+Pengembangan React + Vite, Express, dan SQLite dilakukan per tiket. **POS-001 sampai POS-004 sudah selesai**: fondasi proyek; skema database, migrasi, dan seed; sesi demo pemilik/kasir dengan ruang data per pengunjung; serta API produk dan stok; fitur POS fullstack dihubungkan pada tiket berikutnya. Lihat [daftar tiket](docs/tickets/README.md) dan [aturan proyek](AGENTS.md).
 
 ## Menjalankan fullstack
 
@@ -48,10 +48,10 @@ client/
   dist/              hasil build (diabaikan Git)
 server/
   database/          koneksi, migrasi SQL, transaksi, dan seed
-  lib/               waktu Asia/Jakarta, rupiah, cookie sesi, HttpError
+  lib/               waktu Asia/Jakarta, rupiah, katalog produk, cookie sesi, HttpError
   middleware/        konteks request, sesi/peran, dan error
   repositories/      query SQLite per tabel
-  services/          aturan bisnis (sesi demo)
+  services/          aturan bisnis (sesi demo, produk)
   validation/        validasi body request
   routes/            endpoint API
 scripts/             perintah db:migrate dan db:seed
