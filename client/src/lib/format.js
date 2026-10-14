@@ -61,3 +61,26 @@ const jakartaDateFormat = new Intl.DateTimeFormat('en-CA', {
 export function jakartaDateKey(date = new Date()) {
   return jakartaDateFormat.format(date);
 }
+
+const compactFormat = new Intl.NumberFormat('id-ID', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
+// Contoh: 400000 → "Rp 400 rb" untuk label sumbu yang ringkas.
+export function formatCompactRupiah(value) {
+  return `Rp ${compactFormat.format(value)}`;
+}
+
+const weekdayFormat = new Intl.DateTimeFormat('id-ID', { timeZone, weekday: 'short' });
+const shortDateFormat = new Intl.DateTimeFormat('id-ID', {
+  timeZone,
+  day: 'numeric',
+  month: 'short',
+});
+
+// Kunci tanggal YYYY-MM-DD (kalender Jakarta) ke label; siang WIB agar tidak bergeser hari.
+export function formatDayLabel(dateKey) {
+  const date = new Date(`${dateKey}T12:00:00+07:00`);
+  return { weekday: weekdayFormat.format(date), date: shortDateFormat.format(date) };
+}

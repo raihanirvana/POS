@@ -1,7 +1,7 @@
 import { ErrorNotice } from '../ErrorNotice.jsx';
 import { TransactionRow } from './TransactionRow.jsx';
 
-function TableHead() {
+export function TransactionTableHead() {
   return (
     <thead>
       <tr>
@@ -23,7 +23,7 @@ function TransactionRows({ transactions, onOpen }) {
   return (
     <div className="table-wrap">
       <table className="card-table transaction-table">
-        <TableHead />
+        <TransactionTableHead />
         <tbody>
           {transactions.map((transaction) => (
             <TransactionRow

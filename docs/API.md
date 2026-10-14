@@ -1,6 +1,6 @@
 # API Seduh POS
 
-API JSON satu origin dengan React. Prefix `/api`. Saat ini **healthcheck, sesi demo, produk, dan transaksi** sudah diimplementasikan; endpoint lain di tabel rencana merupakan kontrak untuk tiket berikutnya. Semua respons `/api` memakai `Cache-Control: no-store`.
+API JSON satu origin dengan React. Prefix `/api`. Saat ini **healthcheck, sesi demo, produk, transaksi, dashboard, dan laporan** sudah diimplementasikan; endpoint lain di tabel rencana merupakan kontrak untuk tiket berikutnya. Semua respons `/api` memakai `Cache-Control: no-store`.
 
 ## Endpoint aktif — POS-001
 
@@ -271,6 +271,61 @@ Query opsional: `search` (≤60, nomor atau nama pelanggan), `date` (`YYYY-MM-DD
 
 HTTP 200 `{ "transaction": { … } }` dengan bentuk yang sama seperti respons checkout.
 
+## Dashboard dan laporan — POS-010
+
+Khusus pemilik: kasir mendapat 403 dan tanpa sesi 401. Semua angka dihitung server dari transaksi workspace sesi. Query dalam satu dashboard/laporan memakai snapshot transaksi baca SQLite yang sama. **Pendapatan** adalah total setelah diskon; laporan tidak menghitung laba. Hari dan periode memakai kalender Asia/Jakarta: periode `from`–`to` inklusif dikonversi ke UTC `[00.00 WIB from, 00.00 WIB hari setelah to)`.
+
+### GET /api/dashboard
+
+```json
+{
+  "today": "2026-10-15",
+  "summary": { "revenue": 72000, "transactionCount": 1, "averageTransaction": 72000 },
+  "salesByDay": [{ "date": "2026-10-09", "revenue": 261200, "transactionCount": 4 }, …],
+  "topProducts": [{ "id": "…", "name": "Cinnamon Roll", "category": "Pastry", "imageKey": "cinnamon", "quantity": 11 }],
+  "lowStockThreshold": 10,
+  "lowStock": [{ "id": "…", "name": "Cinnamon Roll", "category": "Pastry", "stock": 8, "imageKey": "cinnamon" }],
+  "recentTransactions": [{ "id": "…", "number": "SDH-20261015-001", … }]
+}
+```
+
+- `summary` untuk hari ini (WIB). `averageTransaction = round(revenue / transactionCount)`, atau 0.
+- `salesByDay` berisi tepat 7 hari sampai hari ini; hari tanpa transaksi bernilai 0.
+- `topProducts` berisi 4 produk dengan unit terjual terbanyak sepanjang waktu, dari snapshot item. Pengelompokan per produk, atau per nama snapshot bila menu sudah dihapus. `id` adalah key kelompok yang stabil; nama mengikuti waktu transaksi terakhir (id item menjadi pemutus seri). Nama menu yang sama tidak menggabungkan produk aktif yang berbeda.
+- `lowStock` berisi produk dengan stok ≤ 10. `recentTransactions` berisi 5 transaksi terbaru dengan bentuk sama seperti daftar transaksi.
+
+### GET /api/reports?from=YYYY-MM-DD&to=YYYY-MM-DD
+
+`from` dan `to` wajib, berupa tanggal kalender yang valid, dengan `from ≤ to` dan rentang maksimal 366 hari. Pelanggaran mendapat 400 `VALIDATION_ERROR` dengan `fields.from`/`fields.to`.
+
+```json
+{
+  "period": { "from": "2026-10-09", "to": "2026-10-15" },
+  "summary": {
+    "revenue": 1993600,
+    "transactionCount": 31,
+    "averageTransaction": 64310,
+    "unitsSold": 77,
+    "subtotalBeforeDiscount": 2050000,
+    "discountTotal": 56400
+  },
+  "byPaymentMethod": {
+    "cash": { "revenue": 920000, "transactionCount": 17 },
+    "qris": { "revenue": 1073600, "transactionCount": 14 }
+  },
+  "byDay": [{ "date": "2026-10-09", "revenue": 261200, "transactionCount": 4 }, …],
+  "topProducts": [{ "id": "…", "name": "…", "category": "…", "imageKey": "…", "quantity": 11 }]
+}
+```
+
+`byDay` mencakup setiap hari dalam periode, termasuk yang bernilai 0. Jumlah pendapatan/transaksi harian dan menurut metode sama dengan ringkasan. `topProducts` berisi maksimal 10 produk menurut unit dalam periode.
+
+### GET /api/reports/export?from=…&to=…
+
+Validasi sama dengan `/api/reports`. HTTP 200 `text/csv; charset=utf-8`, `Content-Disposition: attachment; filename="seduh-laporan-FROM-sampai-TO.csv"`, dan `X-Row-Count`. Isinya UTF-8 dengan BOM dan baris CRLF. Kolomnya: Nomor transaksi, Waktu (WIB), Pelanggan, Jenis pesanan, Metode pembayaran, Jumlah item, Subtotal (Rp), Diskon (%), Diskon (Rp), Total setelah diskon (Rp), Uang diterima (Rp), Kembalian (Rp).
+
+Urutan baris dari yang terlama. Semua sel dikutip dan tanda kutip digandakan. Sel yang diawali `=`, `+`, `-`, `@`, tab, atau CR diberi awalan `'` agar tidak dieksekusi sebagai formula spreadsheet. Periode kosong menghasilkan header saja.
+
 ## Kontrak yang direncanakan
 
 | Metode | Path | Akses | Tiket |
@@ -285,9 +340,9 @@ HTTP 200 `{ "transaction": { … } }` dengan bentuk yang sama seperti respons ch
 | POST | /api/transactions | Kasir/pemilik — aktif | POS-005 |
 | GET | /api/transactions | Kasir/pemilik — aktif | POS-005 |
 | GET | /api/transactions/:id | Kasir/pemilik — aktif | POS-005 |
-| GET | /api/dashboard | Pemilik | POS-010 |
-| GET | /api/reports | Pemilik | POS-010 |
-| GET | /api/reports/export | Pemilik | POS-010 |
+| GET | /api/dashboard | Pemilik — aktif | POS-010 |
+| GET | /api/reports | Pemilik — aktif | POS-010 |
+| GET | /api/reports/export | Pemilik — aktif | POS-010 |
 | GET | /api/settings | Kasir/pemilik | POS-011 |
 | PATCH | /api/settings | Pemilik | POS-011 |
 | POST | /api/demo/reset | Pemilik | POS-011 |

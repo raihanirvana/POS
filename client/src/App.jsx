@@ -6,11 +6,13 @@ import { useSession } from './hooks/useSession.js';
 import { useLocation } from './lib/router.js';
 import { findRoute, homePath, loginHref, loginPath, safeNextPath } from './lib/routes.js';
 import { CashierPage } from './pages/CashierPage.jsx';
+import { DashboardPage } from './pages/DashboardPage.jsx';
 import { ForbiddenPage } from './pages/ForbiddenPage.jsx';
 import { LoginPage } from './pages/LoginPage.jsx';
 import { NotFoundPage } from './pages/NotFoundPage.jsx';
 import { PlaceholderPage } from './pages/PlaceholderPage.jsx';
 import { ProductsPage } from './pages/ProductsPage.jsx';
+import { ReportsPage } from './pages/ReportsPage.jsx';
 import { TransactionsPage } from './pages/TransactionsPage.jsx';
 import { SessionProvider } from './session/SessionProvider.jsx';
 
@@ -19,6 +21,8 @@ const livePages = {
   '/kasir': CashierPage,
   '/produk': ProductsPage,
   '/transaksi': TransactionsPage,
+  '/dashboard': DashboardPage,
+  '/laporan': ReportsPage,
 };
 
 // Pembatasan di UI hanya memudahkan navigasi; server tetap menolak dengan 401/403.

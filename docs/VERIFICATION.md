@@ -156,6 +156,22 @@ Masuk sebagai Kasir di `/kasir`:
 9. Coba nama pelanggan dan menu 60 karakter tanpa spasi pada 360/768/1280px: tabel serta dialog tidak melebar, dan hasil PDF tetap memuat seluruh teks. Cetak 50 item: setiap nama, total, dan footer ada pada PDF beberapa halaman; header UI/tombol tidak tercetak.
 10. Tunda detail struk atau blokir request-nya, lalu emulasikan print: halaman riwayat tetap terlihat, portal loading/error tersembunyi, dan hasil cetak tidak kosong. Tombol Cetak nonaktif sampai struk siap.
 
+## Dashboard dan laporan — POS-010
+
+Masuk sebagai Pemilik dan buat satu penjualan (contoh PRD Rp72.000):
+
+1. `/dashboard`: Penjualan hari ini Rp72.000, 1 transaksi, rata-rata Rp72.000, dan stok menipis sama dengan `GET /api/dashboard`. Grafik 7 kolom dengan hari ini disorot dan diberi label. Hover/Tab ke kolom memunculkan tooltip, dan "Lihat data sebagai tabel" menampilkan 7 baris.
+2. Jumlahkan 7 nilai grafik lalu bandingkan dengan `/laporan` preset 7 hari dan jumlah baris CSV-nya.
+3. `/laporan`:
+   - Tanggal awal setelah tanggal akhir → pesan error, Ekspor nonaktif, dan angka lama tetap.
+   - Periode tanpa transaksi → nol dan "Belum ada transaksi".
+   - Preset 30 hari → 30 kolom; lebih dari 31 hari → tabel.
+4. API: `?from=2026-10-14&to=2026-10-01`, `2026-02-30`, dan rentang lebih dari 366 hari → 400. Kasir → 403, tanpa sesi → 401.
+5. Batas tengah malam: transaksi pukul 23:59:59.999 WIB masuk hari itu, sedangkan 00:00:00.000 WIB masuk hari berikutnya.
+6. CSV: buka di spreadsheet. Nama pelanggan `=HYPERLINK(...)` tampil sebagai teks berawalan `'`, dan huruf Indonesia/emoji terbaca (BOM UTF-8).
+
+Review POS-010 juga menguji ganti periode saat request tertunda/gagal (ekspor tetap nonaktif), respons JSON/CSV rusak, periode tahun 0000/9999, dua API checkout bersamaan dengan laporan, menu bernama sama, pelanggan 60 karakter di dashboard, dan 30 tooltip keyboard pada layar 360px. Detail bukti ada di [POS-010](tickets/POS-010.md). Regresi POS-005, POS-006, POS-008, dan POS-009 dijalankan ulang tanpa unit test.
+
 ## Checklist fitur untuk POS-012
 
 Belum dijalankan untuk fullstack; isi setelah tiket terkait selesai.

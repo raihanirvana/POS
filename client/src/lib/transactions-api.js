@@ -75,7 +75,7 @@ export async function createTransaction(body) {
   return payload;
 }
 
-function isSummary(value) {
+export function isSummary(value) {
   return (
     typeof value?.id === 'string' &&
     typeof value.number === 'string' &&

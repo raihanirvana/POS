@@ -82,22 +82,73 @@ function sendRequest(path, { method = 'GET', body, signal }) {
   });
 }
 
-export async function apiRequest(path, options = {}) {
-  let response;
+async function fetchResponse(path, options) {
   try {
-    response = await sendRequest(path, options);
+    return await sendRequest(path, options);
   } catch (error) {
     throw error.name === 'AbortError' ? error : networkError();
   }
-  const payload = await readPayload(response);
-  if (response.ok) {
-    return payload;
-  }
+}
+
+function failWith(response, payload) {
   const apiError = toApiError(response, payload);
   if (response.status === 401) {
     unauthorizedListeners.forEach((listener) => listener(apiError));
   }
-  throw apiError;
+  return apiError;
+}
+
+export async function apiRequest(path, options = {}) {
+  const response = await fetchResponse(path, options);
+  const payload = await readPayload(response);
+  if (response.ok) {
+    return payload;
+  }
+  throw failWith(response, payload);
+}
+
+function downloadName(header) {
+  const match = /filename="([^"]+)"/.exec(header ?? '');
+  return match ? match[1] : 'seduh-laporan.csv';
+}
+
+function downloadMetadata(response) {
+  const type = response.headers.get('content-type')?.split(';')[0].trim().toLowerCase();
+  const count = response.headers.get('x-row-count');
+  const rowCount = Number(count);
+  if (
+    type !== 'text/csv' ||
+    !/^\d+$/.test(count ?? '') ||
+    !Number.isSafeInteger(rowCount)
+  ) {
+    throw invalidResponse(response.status);
+  }
+  return {
+    filename: downloadName(response.headers.get('content-disposition')),
+    rowCount,
+  };
+}
+
+async function readDownload(response) {
+  try {
+    return await response.blob();
+  } catch {
+    throw networkError();
+  }
+}
+
+// Unduhan file (CSV). Respons gagal tetap JSON sehingga ditangani seperti apiRequest.
+export async function apiDownload(path) {
+  const response = await fetchResponse(path, {});
+  if (!response.ok) {
+    throw failWith(response, await readPayload(response));
+  }
+  const metadata = downloadMetadata(response);
+  const blob = await readDownload(response);
+  if (blob.size === 0) {
+    throw invalidResponse(response.status);
+  }
+  return { blob, ...metadata };
 }
 
 function sessionResponse(payload) {
